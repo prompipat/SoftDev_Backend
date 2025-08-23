@@ -15,6 +15,27 @@ A simple Node.js backend using Supabase for database operations.
 - Node.js
 - Supabase account
 
+### Project Structure
+```graphql
+nodejs-supabase
+├── .env                   # Environment variables
+├── .example.env           # Example environment variables template
+├── .gitignore             # Git ignore file
+├── server.js               # Main application entry point
+├── package.json           # Project dependencies and scripts
+├── readme.md              # Project documentation
+├── config/
+│   ├── supabaseClient.js  # Supabase client configuration
+│   └── swagger.js         # Swagger configuration
+├── controllers/
+│   └── userController.js  # User controller functions
+├── routes/
+│   └── userRoutes.js      # API route definitions with Swagger docs
+└── services/
+    └── userService.js     # Business logic for user operations
+```
+
+
 ### Installation
 
 1. Clone the repository:
