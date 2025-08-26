@@ -44,7 +44,7 @@ export const modifyCategory = async (req, res) => {
     const updates = req.body;
     const updatedCategory = await updateCategory(id, updates);
     if (!updatedCategory || updatedCategory.length === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Category not found" });
     }
     res.status(200).json(updatedCategory);
   } catch (error) {
