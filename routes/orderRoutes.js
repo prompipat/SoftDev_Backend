@@ -78,7 +78,7 @@ const router = express.Router();
  *         description: Invalid input
  *   get:
  *     summary: Get all orders
- *     tags: [orders]
+ *     tags: [Orders]
  *     responses:
  *       200:
  *         description: List of all orders
