@@ -20,6 +20,9 @@ const router = express.Router();
  *       required:
  *         - name
  *         - email
+ *         - profile_pictue
+ *         - role
+ *         - bio
  *       properties:
  *         name:
  *           type: string
@@ -27,9 +30,21 @@ const router = express.Router();
  *         email:
  *           type: string
  *           description: User's email address
+ *         profile_picture:
+ *           type: string
+ *           description: URL of the user's profile picture
+ *         role:
+ *           type: string
+ *           description: Role of the user (e.g., admin, user)
+ *         bio:
+ *           type: string
+ *           description: Short biography of the user
  *       example:
  *         name: John Doe
  *         email: john@example.com
+ *         profile_pictue: "https://example.com/profile.jpg"
+ *         role: user
+ *         bio: "Just a regular user."
  */
 
 /**
