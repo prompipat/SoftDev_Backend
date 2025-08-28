@@ -1,25 +1,25 @@
 import supabase from "../config/supabaseClient.js";
 
-export const createOrder = async (orderData) => {
+export const createReview = async (reviewData) => {
   const { data, error } = await supabase
-    .from("orders")
-    .insert([orderData])
+    .from("reviews")
+    .insert([reviewData])
     .select();
 
   if (error) throw new Error(error.message);
   return data;
 };
 
-export const getOrder = async () => {
-  const { data, error } = await supabase.from("orders").select("*");
+export const getReview = async () => {
+  const { data, error } = await supabase.from("reviews").select("*");
 
   if (error) throw new Error(error.message);
   return data;
 };
 
-export const getOrderById = async (id) => {
+export const getReviewById = async (id) => {
   const { data, error } = await supabase
-    .from("orders")
+    .from("reviews")
     .select("*")
     .eq("id", id)
     .single();
@@ -30,9 +30,9 @@ export const getOrderById = async (id) => {
 
 
 
-export const updateOrder = async (id, updates) => {
+export const updateReview = async (id, updates) => {
   const { data, error } = await supabase
-    .from("orders")
+    .from("reviews")
     .update(updates)
     .eq("id", id)
     .select();
@@ -41,14 +41,14 @@ export const updateOrder = async (id, updates) => {
   return data;
 };
 
-export const deleteOrder = async (id) => {
+export const deleteReview = async (id) => {
   const { error } = await supabase
-    .from("orders")
+    .from("reviews")
     .delete()
     .eq("id", id)
     .select();
 
   if (error) throw new Error(error.message);
-  return { success: true, message: "Order deleted successfully" };
+  return { success: true, message: "review deleted successfully" };
 };
 

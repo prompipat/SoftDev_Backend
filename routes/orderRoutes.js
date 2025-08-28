@@ -51,7 +51,7 @@ const router = express.Router();
  *         event_date: "2025-12-25T18:30:00Z"   
  *         participant: 50
  *         package_id: "uuid-v4-string"
- *         user_id: "uuid-v4-string"
+ *         user_id: "21e7012f-2939-4fba-b295-9208e324dd3b"
  *         restaurant_id: "uuid-v4-string"
  */
 

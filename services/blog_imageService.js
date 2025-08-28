@@ -1,25 +1,25 @@
 import supabase from "../config/supabaseClient.js";
 
-export const createOrder = async (orderData) => {
+export const createBlog_image = async (blog_imageData) => {
   const { data, error } = await supabase
-    .from("orders")
-    .insert([orderData])
+    .from("blog_images")
+    .insert([blog_imageData])
     .select();
 
   if (error) throw new Error(error.message);
   return data;
 };
 
-export const getOrder = async () => {
-  const { data, error } = await supabase.from("orders").select("*");
+export const getBlog_image = async () => {
+  const { data, error } = await supabase.from("blog_images").select("*");
 
   if (error) throw new Error(error.message);
   return data;
 };
 
-export const getOrderById = async (id) => {
+export const getBlog_imageById = async (id) => {
   const { data, error } = await supabase
-    .from("orders")
+    .from("blog_images")
     .select("*")
     .eq("id", id)
     .single();
@@ -30,9 +30,9 @@ export const getOrderById = async (id) => {
 
 
 
-export const updateOrder = async (id, updates) => {
+export const updateBlog_image = async (id, updates) => {
   const { data, error } = await supabase
-    .from("orders")
+    .from("blog_images")
     .update(updates)
     .eq("id", id)
     .select();
@@ -41,14 +41,14 @@ export const updateOrder = async (id, updates) => {
   return data;
 };
 
-export const deleteOrder = async (id) => {
+export const deleteBlog_image = async (id) => {
   const { error } = await supabase
-    .from("orders")
+    .from("blog_images")
     .delete()
     .eq("id", id)
     .select();
 
   if (error) throw new Error(error.message);
-  return { success: true, message: "Order deleted successfully" };
+  return { success: true, message: "blogs image deleted successfully" };
 };
 

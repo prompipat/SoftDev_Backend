@@ -1,25 +1,25 @@
 import supabase from "../config/supabaseClient.js";
 
-export const createOrder = async (orderData) => {
+export const createBlog = async (blogData) => {
   const { data, error } = await supabase
-    .from("orders")
-    .insert([orderData])
+    .from("blogs")
+    .insert([blogData])
     .select();
 
   if (error) throw new Error(error.message);
   return data;
 };
 
-export const getOrder = async () => {
-  const { data, error } = await supabase.from("orders").select("*");
+export const getBlog = async () => {
+  const { data, error } = await supabase.from("blogs").select("*");
 
   if (error) throw new Error(error.message);
   return data;
 };
 
-export const getOrderById = async (id) => {
+export const getBlogById = async (id) => {
   const { data, error } = await supabase
-    .from("orders")
+    .from("blogs")
     .select("*")
     .eq("id", id)
     .single();
@@ -30,9 +30,9 @@ export const getOrderById = async (id) => {
 
 
 
-export const updateOrder = async (id, updates) => {
+export const updateBlog = async (id, updates) => {
   const { data, error } = await supabase
-    .from("orders")
+    .from("blogs")
     .update(updates)
     .eq("id", id)
     .select();
@@ -41,14 +41,14 @@ export const updateOrder = async (id, updates) => {
   return data;
 };
 
-export const deleteOrder = async (id) => {
+export const deleteBlog = async (id) => {
   const { error } = await supabase
-    .from("orders")
+    .from("blogs")
     .delete()
     .eq("id", id)
     .select();
 
   if (error) throw new Error(error.message);
-  return { success: true, message: "Order deleted successfully" };
+  return { success: true, message: "blogs deleted successfully" };
 };
 

@@ -1,38 +1,36 @@
 import supabase from "../config/supabaseClient.js";
 
-export const createOrder = async (orderData) => {
+export const createPayment = async (paymentData) => {
   const { data, error } = await supabase
-    .from("orders")
-    .insert([orderData])
+    .from("payments")
+    .insert([paymentData])
     .select();
 
   if (error) throw new Error(error.message);
   return data;
 };
 
-export const getOrder = async () => {
-  const { data, error } = await supabase.from("orders").select("*");
+export const getPayment = async () => {
+  const { data, error } = await supabase.from("payments").select("*");
 
   if (error) throw new Error(error.message);
   return data;
 };
 
-export const getOrderById = async (id) => {
+export const getPaymentById = async (id) => {
   const { data, error } = await supabase
-    .from("orders")
+    .from("payments")
     .select("*")
     .eq("id", id)
     .single();
 
   if (error) throw new Error(error.message);
   return data;
-};
+};  
 
-
-
-export const updateOrder = async (id, updates) => {
+export const updatePayment = async (id, updates) => {
   const { data, error } = await supabase
-    .from("orders")
+    .from("payments")
     .update(updates)
     .eq("id", id)
     .select();
@@ -41,14 +39,16 @@ export const updateOrder = async (id, updates) => {
   return data;
 };
 
-export const deleteOrder = async (id) => {
+export const deletePayment = async (id) => {
   const { error } = await supabase
-    .from("orders")
+    .from("payments")
     .delete()
     .eq("id", id)
     .select();
 
   if (error) throw new Error(error.message);
-  return { success: true, message: "Order deleted successfully" };
+  return { success: true, message: "Payment deleted successfully" };
 };
+
+
 
