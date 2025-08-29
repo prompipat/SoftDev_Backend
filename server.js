@@ -9,6 +9,7 @@ import blog_imageRoutes from "./routes/blog_imageRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import favouriteRoutes from "./routes/favouriteRoutes.js";
+import restaurantIamgeRoutes from "./routes/restaurantImageRoutes.js";
 import { swaggerUi, specs } from "./config/swagger.js";
 
 dotenv.config();
@@ -28,6 +29,7 @@ app.use("/api", blog_imageRoutes);
 app.use("/api", reviewRoutes);
 app.use("/api", paymentRoutes);
 app.use("/api", favouriteRoutes);
+app.use("/api", restaurantIamgeRoutes);
 app.get("/", (req, res) => {
   res.send("API is running... <a href='/api-docs'>View API documentation</a>");
 });
