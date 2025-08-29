@@ -13,6 +13,7 @@ import restaurantImageRoutes from "./routes/restaurantImageRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
 import packageImageRoutes from "./routes/packageImageRoutes.js";
 import packageRoutes from "./routes/packageRoutes.js";
+import verificationFormRoutes from "./routes/verificationFormRoutes.js";
 import { swaggerUi, specs } from "./config/swagger.js";
 
 dotenv.config();
@@ -36,6 +37,7 @@ app.use("/api", restaurantImageRoutes);
 app.use("/api", restaurantRoutes);
 app.use("/api", packageImageRoutes);
 app.use("/api", packageRoutes);
+app.use("/api", verificationFormRoutes);
 app.get("/", (req, res) => {
   res.send("API is running... <a href='/api-docs'>View API documentation</a>");
 });
