@@ -11,6 +11,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import favouriteRoutes from "./routes/favouriteRoutes.js";
 import restaurantImageRoutes from "./routes/restaurantImageRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
+import packageImageRoutes from "./routes/packageImageRoutes.js";
 import { swaggerUi, specs } from "./config/swagger.js";
 
 dotenv.config();
@@ -32,6 +33,7 @@ app.use("/api", paymentRoutes);
 app.use("/api", favouriteRoutes);
 app.use("/api", restaurantImageRoutes);
 app.use("/api", restaurantRoutes);
+app.use("/api", packageImageRoutes);
 app.get("/", (req, res) => {
   res.send("API is running... <a href='/api-docs'>View API documentation</a>");
 });
