@@ -5,7 +5,7 @@ export const createVerificationForm = async (verificationFormData) => {
     .from("verification_form")
     .insert([
       {
-        admin_id: verificationFormData.admin_id,
+        user_id: verificationFormData.user_id,
         restaurant_id: verificationFormData.restaurant_id,
         verification_info: verificationFormData.verification_info,
         status: verificationFormData.status,

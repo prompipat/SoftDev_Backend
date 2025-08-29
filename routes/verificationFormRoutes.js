@@ -16,12 +16,12 @@ const router = express.Router();
  *     VerificationForm:
  *       type: object
  *       required:
- *         - admin_id
+ *         - user_id
  *         - restaurant_id
  *         - verification_info
  *         - status
  *       properties:
- *         admin_id:
+ *         user_id:
  *           type: string
  *           description: ID of the admin reviewing the form
  *         restaurant_id:
@@ -35,7 +35,7 @@ const router = express.Router();
  *           enum: [pending, approved, rejected]
  *           description: Current status of the verification form
  *       example:
- *         admin_id: "12345"
+ *         user_id: "12345"
  *         restaurant_id: "67890"
  *         verification_info: "Business license and documents verified"
  *         status: "pending"
