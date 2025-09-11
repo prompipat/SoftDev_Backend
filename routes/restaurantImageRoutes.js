@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import {
   addRestaurantImage,
   fetchRestaurantImages,
@@ -8,6 +9,14 @@ import {
 } from "../controllers/restaurantImageController.js";
 
 const router = express.Router();
+const upload = multer(); // memory storage by default
+
+/**
+ * @swagger
+ * tags:
+ *   name: RestaurantImages
+ *   description: API for managing restaurant images
+ */
 
 /**
  * @swagger
@@ -18,19 +27,25 @@ const router = express.Router();
  *       required:
  *         - url
  *         - restaurant_id
+ *         - filename
  *       properties:
  *         id:
  *           type: string
  *           description: Auto-generated ID of the image
  *         url:
  *           type: string
- *           description: Image URL
+ *           description: Public URL of the image
  *         restaurant_id:
  *           type: string
  *           description: ID of the restaurant this image belongs to
+ *         filename:
+ *           type: string
+ *           description: Unique filename of the image stored in Supabase
  *       example:
- *         url: "https://example.com/image.jpg"
+ *         id: "1"
+ *         url: "https://example.supabase.co/storage/v1/object/public/Images/restaurant/123-uuid.png"
  *         restaurant_id: "123"
+ *         filename: "123-uuid.png"
  */
 
 /**
@@ -39,15 +54,28 @@ const router = express.Router();
  *   post:
  *     summary: Upload a new restaurant image
  *     tags: [RestaurantImages]
+ *     consumes:
+ *       - multipart/form-data
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/RestaurantImage'
+ *             type: object
+ *             required:
+ *               - restaurant_id
+ *               - file
+ *             properties:
+ *               restaurant_id:
+ *                 type: string
+ *                 description: Restaurant ID the image belongs to
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image file to upload
  *     responses:
  *       201:
- *         description: Restaurant image created successfully
+ *         description: Restaurant image uploaded successfully
  *         content:
  *           application/json:
  *             schema:
@@ -69,8 +97,6 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/restaurants-images", addRestaurantImage);
-router.get("/restaurants-images", fetchRestaurantImages);
 
 /**
  * @swagger
@@ -136,9 +162,26 @@ router.get("/restaurants-images", fetchRestaurantImages);
  *     responses:
  *       200:
  *         description: Restaurant image deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Restaurant image deleted successfully
+ *       404:
+ *         description: Restaurant image not found
  *       500:
  *         description: Server error
  */
+
+router.post("/restaurants-images", upload.single("file"), addRestaurantImage);
+
+router.get("/restaurants-images", fetchRestaurantImages);
 router.get("/restaurants-images/:id", fetchRestaurantImageById);
 router.put("/restaurants-images/:id", modifyRestaurantImage);
 router.delete("/restaurants-images/:id", removeRestaurantImage);
