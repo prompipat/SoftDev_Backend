@@ -1,5 +1,5 @@
 import {
-  createRestaurantImage,
+  uploadRestaurantImage,
   getRestaurantImages,
   getRestaurantImageById,
   updateRestaurantImage,
@@ -9,7 +9,12 @@ import {
 export const addRestaurantImage = async (req, res) => {
   try {
     const restaurantImageData = req.body;
-    const newImage = await createRestaurantImage(restaurantImageData);
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const newImage = await uploadRestaurantImage(restaurantImageData, file);
     res.status(201).json(newImage);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -29,9 +34,7 @@ export const fetchRestaurantImageById = async (req, res) => {
   try {
     const { id } = req.params;
     const image = await getRestaurantImageById(id);
-    if (!image) {
-      return res.status(404).json({ error: "Restaurant image not found" });
-    }
+    if (!image) return res.status(404).json({ error: "Restaurant image not found" });
     res.status(200).json(image);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -43,9 +46,7 @@ export const modifyRestaurantImage = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
     const updatedImage = await updateRestaurantImage(id, updates);
-    if (!updatedImage || updatedImage.length === 0) {
-      return res.status(404).json({ error: "Restaurant image not found" });
-    }
+    if (!updatedImage) return res.status(404).json({ error: "Restaurant image not found" });
     res.status(200).json(updatedImage);
   } catch (error) {
     res.status(400).json({ error: error.message });
