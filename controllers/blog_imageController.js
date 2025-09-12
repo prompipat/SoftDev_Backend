@@ -1,5 +1,5 @@
 import { 
-  createBlog_image, 
+  uploadBlogImage, 
   getBlog_image,
   getBlog_imageById,
   updateBlog_image,
@@ -9,12 +9,20 @@ import {
 export const addBlog_image = async (req, res) => {
   try {
     const blog_imageData = req.body;
-    const newBlog_image = await createBlog_image(blog_imageData);
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const newBlog_image = await uploadBlogImage(blog_imageData, file);
     res.status(201).json(newBlog_image);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
+
+
+
 
 export const fetchBlog_images = async (req, res) => {
   try {
