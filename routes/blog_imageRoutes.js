@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import {
   addBlog_image,
   fetchBlog_images,
@@ -10,6 +11,8 @@ import {
 
 
 const router = express.Router();
+const upload = multer(); // memory storage by default
+
 
 /**
  * @swagger
@@ -20,35 +23,49 @@ const router = express.Router();
  *       required:
  *         - url
  *         - blog_id
+ *         - filename
  *       properties:
- *       url:
+ *         url:
  *           type: string
  *           description: url of the blog image
- *       blog_id:
- *          type: foreign key
- *          description: id of the blog associated with the image   
+ *         blog_id:
+ *           type: string
+ *           description: id of the blog associated with the image   
+ *         filename:
+ *           type: string
+ *           description: unique filename of the image stored in supabase
  *       example:
- *        url: "https://example.com/image.jpg"
- *        blog_id: "d290f1ee-6c54-4b01-90e6-d701748f0851"
-
-
+ *         url: "https://example.com/image.jpg"
+ *         blog_id: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+ *         filename: "unique-filename.jpg"
  */
 
 /**
  * @swagger
  * /api/blog_images:
  *   post:
- *     summary: Create a new blog image
+ *     summary: Upload a new blog image
  *     tags: [Blog_images]
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Blog_image'
+ *             type: object
+ *             required:
+ *               - blog_id
+ *               - file
+ *             properties:
+ *               blog_id:
+ *                 type: string
+ *                 description: ID of the blog this image belongs to
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: The image file to upload
  *     responses:
  *       201:
- *         description:  Blog image created successfully
+ *         description: Blog image uploaded successfully
  *         content:
  *           application/json:
  *             schema:
@@ -70,7 +87,8 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/blog_images", addBlog_image);
+
+router.post("/blog_images", upload.single("file"),addBlog_image);
 router.get("/blog_images", fetchBlog_images);
 
 
