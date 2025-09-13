@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import {
   addUser,
   fetchUsers,
@@ -7,9 +8,11 @@ import {
   modifyUser,
   removeUser,
   findUsers,
+  uploadProfilePicture,
 } from "../controllers/userController.js";
 
 const router = express.Router();
+const upload = multer(); // memory storage
 
 /**
  * @swagger
@@ -21,9 +24,7 @@ const router = express.Router();
  *         - email
  *         - password
  *         - name
- *         - profile_pictue
  *         - role
- *         - bio
  *       properties:
  *         email:
  *           type: string
@@ -216,5 +217,43 @@ router.delete("/users/:id", removeUser);
  *         description: Server error
  */
 router.get("/users/email/:email", fetchUserByEmail);
+
+/**
+ * @swagger
+ * /api/users/{id}/profile-picture:
+ *   post:
+ *     summary: Upload or update a user's profile picture
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: The profile picture to upload
+ *     responses:
+ *       200:
+ *         description: User profile picture updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid input or no file uploaded
+ */
+router.post("/users/:id/profile-picture", upload.single("file"), uploadProfilePicture);
 
 export default router;
