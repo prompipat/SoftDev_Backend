@@ -5,14 +5,33 @@ import {
   getUserByEmail,
   updateUser,
   deleteUser,
+  uploadUserProfilePicture,
   searchUsers
 } from "../services/userService.js";
+
 
 export const addUser = async (req, res) => {
   try {
     const userData = req.body;
     const newUser = await createUser(userData);
     res.status(201).json(newUser);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Upload profile picture
+export const uploadProfilePicture = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const updatedUser = await uploadUserProfilePicture(id, file);
+    res.status(200).json(updatedUser);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -26,6 +45,8 @@ export const fetchUsers = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
 
 export const fetchUserById = async (req, res) => {
   try {
