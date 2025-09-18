@@ -73,6 +73,7 @@ See `.example.env` for required variables:
 
 - `SUPABASE_URL`
 - `SUPABASE_KEY`
+- `SUPABASE_JWT_SECRET`
 - `DATABASE_URL` (optional)
 
 ## License
