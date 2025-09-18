@@ -1,5 +1,6 @@
 import express from "express";
 import multer from "multer";
+import { authMiddleware } from "../services/authMiddleware.js";
 import {
   addUser,
   fetchUsers,
@@ -9,6 +10,7 @@ import {
   removeUser,
   findUsers,
   uploadProfilePicture,
+  fetchUserProfile,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -118,7 +120,49 @@ router.get("/users", fetchUsers);
  *       500:
  *         description: Server error
  */
-router.get("/users/search", findUsers);
+router.get("/users/search", authMiddleware, findUsers);
+
+/**
+ * @swagger
+ * /api/users/profile:
+ *   get:
+ *     summary: Get a user profile
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: User details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ *   put:
+ *     summary: Update a user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: Updated user details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       400:
+ *         description: Invalid input
+ */
+router.get("/users/profile", authMiddleware, fetchUserProfile);
+router.put("/users/profile", authMiddleware, modifyUser);
+
 
 /**
  * @swagger
@@ -187,9 +231,9 @@ router.get("/users/search", findUsers);
  *       500:
  *         description: Server error
  */
-router.get("/users/:id", fetchUserById);
-router.put("/users/:id", modifyUser);
-router.delete("/users/:id", removeUser);
+router.get("/users/:id", authMiddleware, fetchUserById);
+router.delete("/users/:id", authMiddleware, removeUser);
+
 
 /**
  * @swagger
@@ -216,21 +260,14 @@ router.delete("/users/:id", removeUser);
  *       500:
  *         description: Server error
  */
-router.get("/users/email/:email", fetchUserByEmail);
+router.get("/users/email/:email", authMiddleware, fetchUserByEmail);
 
 /**
  * @swagger
- * /api/users/{id}/profile-picture:
+ * /api/users/profile-picture:
  *   post:
  *     summary: Upload or update a user's profile picture
  *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: ID of the user
  *     requestBody:
  *       required: true
  *       content:
@@ -254,6 +291,6 @@ router.get("/users/email/:email", fetchUserByEmail);
  *       400:
  *         description: Invalid input or no file uploaded
  */
-router.post("/users/:id/profile-picture", upload.single("file"), uploadProfilePicture);
+router.post("/users/profile-picture", authMiddleware, upload.single("file"), uploadProfilePicture);
 
 export default router;

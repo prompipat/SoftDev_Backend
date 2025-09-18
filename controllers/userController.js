@@ -20,10 +20,9 @@ export const addUser = async (req, res) => {
   }
 };
 
-// Upload profile picture
 export const uploadProfilePicture = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.user.userData.id;
     const file = req.file;
 
     if (!file) {
@@ -46,7 +45,13 @@ export const fetchUsers = async (req, res) => {
   }
 };
 
-
+export const fetchUserProfile = async (req, res) => {
+  try {
+    res.status(200).json(req.user.userData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 export const fetchUserById = async (req, res) => {
   try {
@@ -76,7 +81,7 @@ export const fetchUserByEmail = async (req, res) => {
 
 export const modifyUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.user.userData.id;
     const updates = req.body;
     const updatedUser = await updateUser(id, updates);
     if (!updatedUser || updatedUser.length === 0) {
