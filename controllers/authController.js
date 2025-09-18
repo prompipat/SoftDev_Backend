@@ -1,4 +1,5 @@
 import { signUp, signIn } from "../services/authService.js";
+import { getUserById } from "../services/userService.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -22,11 +23,27 @@ export const registerUser = async (req, res) => {
         .json({ error: error.message || "Signup failed." });
     }
 
-    return res.status(201).json({
-      message: "User registered successfully",
-      user,
-      session,
-    });
+    if (user.id) {
+      const userData = await getUserById(user.id);
+      console.log(userData)
+      if (!userData) {
+        return res.status(401).json({ 
+          error: "Access denied. User not found.",
+          details: [{ field: 'user', message: 'User associated with token no longer exists' }]
+        });
+      }
+      return res.status(200).json({
+          message: "User registered successfully",
+          accessToken: session.access_token,
+          userData
+      });
+    } else {
+        return res.status(401).json({ 
+          error: "Access denied. User not found.",
+          details: [{ field: 'user', message: 'User associated with token no longer exists' }]
+        });
+    }
+
   } catch (err) {
     return res.status(500).json({ error: "Internal server error" });
   }
@@ -50,11 +67,27 @@ export const loginUser = async (req, res) => {
                 .json({ error: error.message || "Invalid email or password." });
         }
 
-        return res.status(200).json({
-            message: "Login successful",
-            user,
-            session,
-        });
+        if (user.id) {
+          const userData = await getUserById(user.id);
+          console.log(userData)
+          if (!userData) {
+            return res.status(401).json({ 
+              error: "Access denied. User not found.",
+              details: [{ field: 'user', message: 'User associated with token no longer exists' }]
+            });
+          }
+          return res.status(200).json({
+              message: "Login successful",
+              accessToken: session.access_token,
+              userData
+          });
+        } else {
+            return res.status(401).json({ 
+              error: "Access denied. User not found.",
+              details: [{ field: 'user', message: 'User associated with token no longer exists' }]
+            });
+        }
+
     } catch (err) {
         return res.status(500).json({ error: "Internal server error" });
     }
