@@ -22,8 +22,32 @@ export const addBlog = async (req, res) => {
 
 export const fetchBlogs = async (req, res) => {
   try {
-    const blogs = await getBlog();
-    res.status(200).json(blogs);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const sortBy = req.query.sortBy || 'timestamp';
+    const sortOrder = req.query.sortOrder || 'desc';
+
+    if (page < 1) {
+      return res.status(400).json({ error: "Page must be greater than 0" });
+    }
+    
+    if (limit < 1 || limit > 100) {
+      return res.status(400).json({ error: "Limit must be between 1 and 100" });
+    }
+
+    const allowedSortFields = ['timestamp', 'title', 'id'];
+    const allowedSortOrders = ['asc', 'desc'];
+    
+    if (!allowedSortFields.includes(sortBy)) {
+      return res.status(400).json({ error: `Invalid sortBy field. Allowed: ${allowedSortFields.join(', ')}` });
+    }
+    
+    if (!allowedSortOrders.includes(sortOrder)) {
+      return res.status(400).json({ error: `Invalid sortOrder. Allowed: ${allowedSortOrders.join(', ')}` });
+    }
+
+    const result = await getBlog(page, limit, sortBy, sortOrder);
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
