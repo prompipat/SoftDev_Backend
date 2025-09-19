@@ -18,7 +18,7 @@ export const createRestaurant = async (restaurantData) => {
     ])
     .select()
     .single();
-
+  if (error) throw new Error(error.message);
   return data;
 };
 
