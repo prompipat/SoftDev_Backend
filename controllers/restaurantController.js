@@ -10,6 +10,10 @@ import {
 export const addRestaurant = async (req, res) => {
   try {
     const restaurantData = req.body;
+
+
+    restaurantData.user_id = req.user.userData.id;
+
     const newRestaurant = await createRestaurant(restaurantData);
     res.status(201).json(newRestaurant);
   } catch (error) {

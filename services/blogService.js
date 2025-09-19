@@ -17,11 +17,36 @@ export const createBlog = async (blogData) => {
   return data;
 };
 
-export const getBlog = async () => {
-  const { data, error } = await supabase.from("blogs").select("*");
+export const getBlog = async (page = 1, limit = 10, sortBy = 'timestamp', sortOrder = 'desc') => {
+  const offset = (page - 1) * limit;
+
+  const { count, error: countError } = await supabase
+    .from("blogs")
+    .select("*", { count: 'exact', head: true });
+
+  if (countError) throw new Error(countError.message);
+
+  const { data, error } = await supabase
+    .from("blogs")
+    .select("*")
+    .order(sortBy, { ascending: sortOrder === 'asc' })
+    .range(offset, offset + limit - 1);
 
   if (error) throw new Error(error.message);
-  return data;
+
+  const totalPages = Math.ceil(count / limit);
+
+  return {
+    data,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalItems: count,
+      itemsPerPage: limit,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1
+    }
+  };
 };
 
 export const getBlogById = async (id) => {
@@ -34,8 +59,6 @@ export const getBlogById = async (id) => {
   if (error) throw new Error(error.message);
   return data;
 };
-
-
 
 export const updateBlog = async (id, updates) => {
   const { data, error } = await supabase
@@ -58,4 +81,3 @@ export const deleteBlog = async (id) => {
   if (error) throw new Error(error.message);
   return { success: true, message: "blogs deleted successfully" };
 };
-
