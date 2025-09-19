@@ -19,24 +19,6 @@ export const createRestaurant = async (restaurantData) => {
     .select()
     .single();
 
-  if (error) throw new Error(error.message);
-  const { data: user, error: userError } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", restaurantData.user_id)
-    .single();
-
-  if (userError) throw new Error(userError.message);
- // IF USER IS NOT A RESTAURANT, UPDATE ROLE TO RESTAURANT
-  if (user && user.role !== "restaurant") {
-    const { error: updateError } = await supabase
-      .from("users")
-      .update({ role: "restaurant" })
-      .eq("id", restaurantData.user_id);
-
-    if (updateError) throw new Error(updateError.message);
-  }
-
   return data;
 };
 
