@@ -4,7 +4,8 @@ import {
   fetchRestaurants,
   fetchRestaurantById,
   modifyRestaurant,
-  removeRestaurant
+  removeRestaurant,
+  findRestaurants
 } from "../controllers/restaurantController.js";
 
 const router = express.Router();
@@ -79,6 +80,34 @@ const router = express.Router();
 router.post("/restaurants", addRestaurant);
 router.get("/restaurants", fetchRestaurants);
 
+/**
+ * @swagger
+ * /api/restaurants/search:
+ *   get:
+ *     summary: Search for restaurants by name, description, or category name
+ *     tags: [Restaurants]
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Search term to look for in restaurant name, description, or category name
+ *     responses:
+ *       200:
+ *         description: List of matching restaurants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Restaurant'
+ *       400:
+ *         description: Missing search query
+ *       500:
+ *         description: Server error
+ */
+router.get("/restaurants/search", findRestaurants);
 /**
  * @swagger
  * /api/restaurants/{id}:

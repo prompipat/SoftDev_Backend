@@ -4,6 +4,7 @@ import {
   getRestaurantById,
   updateRestaurant,
   deleteRestaurant,
+  searchRestaurants
 } from "../services/restaurantService.js";
 
 export const addRestaurant = async (req, res) => {
@@ -57,6 +58,19 @@ export const removeRestaurant = async (req, res) => {
     const { id } = req.params;
     const result = await deleteRestaurant(id);
     res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const findRestaurants = async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ error: "Search query is required" });
+    }
+    const results = await searchRestaurants(query);
+    res.status(200).json(results);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -75,3 +75,76 @@ export const findRestaurantByName = async (name) => {
   if (error) throw new Error(error.message);
   return data;
 };
+
+
+export const searchRestaurants = async (query) => {
+  try {
+
+    const { data: restaurantMatches, error: restaurantError } = await supabase
+      .from("restaurants")
+      .select(`
+        id,
+        name,
+        description,
+        user_id,
+        category_id,
+        categories (
+          id,
+          name
+        ),
+        restaurants_images (
+          id,
+          url,
+          filename
+        )
+      `)
+      .or(`name.ilike.%${query}%,description.ilike.%${query}%`);
+
+    if (restaurantError) throw new Error(restaurantError.message);
+
+   
+    const { data: categoryMatches, error: categoryError } = await supabase
+      .from("categories")
+      .select("id, name")
+      .ilike("name", `%${query}%`);
+
+    if (categoryError) throw new Error(categoryError.message);
+
+    let categoryRestaurants = [];
+    if (categoryMatches && categoryMatches.length > 0) {
+      const categoryIds = categoryMatches.map((c) => c.id);
+      const { data, error } = await supabase
+        .from("restaurants")
+        .select(`
+          id,
+          name,
+          description,
+          user_id,
+          category_id,
+          categories (
+            id,
+            name
+          ),
+          restaurants_images (
+            id,
+            url,
+            filename
+          )
+        `)
+        .in("category_id", categoryIds);
+
+      if (error) throw new Error(error.message);
+      categoryRestaurants = data;
+    }
+
+    
+    const allResults = [...restaurantMatches, ...categoryRestaurants];
+    const uniqueResults = Array.from(
+      new Map(allResults.map((r) => [r.id, r])).values()
+    );
+
+    return uniqueResults;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
