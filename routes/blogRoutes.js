@@ -1,4 +1,5 @@
 import express from "express";
+import { authMiddleware } from "../services/authMiddleware.js";
 import {
   addBlog,
   fetchBlogs,
@@ -20,7 +21,6 @@ const router = express.Router();
  *         - timestamp
  *         - title
  *         - detail
- *         - user_id
  *       properties:
  *         timestamp:
  *           type: timestamp
@@ -31,15 +31,10 @@ const router = express.Router();
  *       detail:    
  *           type: string
  *           description: detail of the blog
- *       user_id:
- *           type: foreign key
- *           description: id of the user who created the blog   
  *       example:
  *         timestamp: "2025-12-25T18:30:00Z"
  *         title: "ร้านนี้อร่อยมาก"
  *         detail: "ร้านนี้มีอาหารหลากหลายและรสชาติดีมากๆ แนะนำให้ลอง!"
- *         user_id: "21e7012f-2939-4fba-b295-9208e324dd3b"
-
  */
 
 /**
@@ -78,7 +73,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/blogs", addBlog);
+router.post("/blogs", authMiddleware, addBlog);
 router.get("/blogs", fetchBlogs);
 
 
@@ -150,7 +145,7 @@ router.get("/blogs", fetchBlogs);
  *         description: Server error
  */
 router.get("/blogs/:id", fetchBlogById);
-router.put("/blogs/:id", modifyBlog);
-router.delete("/blogs/:id", removeBlog);
+router.put("/blogs/:id", authMiddleware, modifyBlog);
+router.delete("/blogs/:id", authMiddleware, removeBlog);
 
 export default router;

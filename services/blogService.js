@@ -3,7 +3,14 @@ import supabase from "../config/supabaseClient.js";
 export const createBlog = async (blogData) => {
   const { data, error } = await supabase
     .from("blogs")
-    .insert([blogData])
+    .insert([
+      {
+        timestamp: blogData.timestamp,
+        title: blogData.title,
+        detail: blogData.detail,
+        user_id: blogData.user_id
+      }
+    ])
     .select();
 
   if (error) throw new Error(error.message);

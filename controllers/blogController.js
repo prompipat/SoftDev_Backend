@@ -9,6 +9,10 @@ import {
 export const addBlog = async (req, res) => {
   try {
     const blogData = req.body;
+    const userId = req.user.userData.id;
+    
+    blogData.user_id = userId;
+
     const newBlog = await createBlog(blogData);
     res.status(201).json(newBlog);
   } catch (error) {
