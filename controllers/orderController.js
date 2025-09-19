@@ -9,6 +9,9 @@ import {
 export const addOrder = async (req, res) => {
   try {
     const orderData = req.body;
+    const userId = req.user.userData.id;
+
+    orderData.user_id = userId;
     const newOrder = await createOrder(orderData);
     res.status(201).json(newOrder);
   } catch (error) {

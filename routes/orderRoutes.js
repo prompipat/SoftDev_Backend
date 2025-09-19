@@ -1,4 +1,5 @@
 import express from "express";
+import { authMiddleware } from "../services/authMiddleware.js";
 import {
   addOrder,
   fetchOrders,
@@ -21,7 +22,6 @@ const router = express.Router();
  *         - event_date
  *         - participant
  *         - package_id
- *         - user_id
  *         - restaurant_id
  *       properties:
  *         status:
@@ -30,29 +30,32 @@ const router = express.Router();
  *       location:
  *           type: string
  *           description: location of the event
- *       event_date:    
- *           type: timestamp
- *           description: date of the event
- *       participant:
- *           type: integer
- *           description: number of participants in the event
  *       package_id:
  *           type: foreign key
  *           description: id of the package
- *       user_id:
- *           type: foreign key
- *           description: id of the user who made the order
  *       restaurant_id:
  *           type: foreign key
  *           description: id of the restaurant that will fulfill the order
+ *       start_time:
+ *           type: string 
+ *           format: date-time
+ *           description: start time of the event
+ *       end_time:
+ *          type: string
+ *          format: date-time
+ *          description: end time of the event
+ *       event_date:
+ *          type: date
+ *          format: date-time
+ *          description: date of the event
  *       example:
  *         status: pending
  *         location: "123 ถนนพหลโยธิน แขวงลาดยาว เขตจตุจักร กรุงเทพฯ 10900"
- *         event_date: "2025-12-25T18:30:00Z"   
- *         participant: 50
  *         package_id: "uuid-v4-string"
- *         user_id: "21e7012f-2939-4fba-b295-9208e324dd3b"
  *         restaurant_id: "uuid-v4-string"
+ *         start_time: "10:00:00Z"
+ *         end_time: "14:00:00Z"
+ *         event_date: "2023-10-10"
  */
 
 /**
@@ -91,7 +94,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/orders", addOrder);
+router.post("/orders", authMiddleware, addOrder);
 router.get("/orders", fetchOrders);
 
 
@@ -162,8 +165,8 @@ router.get("/orders", fetchOrders);
  *       500:
  *         description: Server error
  */
-router.get("/orders/:id", fetchOrderById);
-router.put("/orders/:id", modifyOrder);
-router.delete("/orders/:id", removeOrder);
+router.get("/orders/:id", authMiddleware ,fetchOrderById);
+router.put("/orders/:id",authMiddleware, modifyOrder);
+router.delete("/orders/:id", authMiddleware,removeOrder);
 
 export default router;
