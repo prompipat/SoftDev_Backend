@@ -1,4 +1,5 @@
 import express from "express";
+import { authMiddleware } from "../services/authMiddleware.js";
 import {
     addReview,
     fetchReviews,
@@ -18,7 +19,6 @@ const router = express.Router();
  *       required:
  *         - review_info
  *         - restaurant_id
- *         - user_id
  *         - rating
  *       properties:
  *         review_info:
@@ -27,16 +27,12 @@ const router = express.Router();
  *         restaurant_id:
  *           type: foreign key
  *           description: ID of the restaurant being reviewed
- *         user_id:
- *           type: foreign key
- *           description: ID of the user who wrote the review
  *         rating:
  *           type: float
  *           description: Rating given by the user
  *       example:
  *         review_info: "Great food and excellent service!"
  *         restaurant_id: "26eb148f-d644-4560-a87c-b5fe9db64a72"
- *         user_id: "21e7012f-2939-4fba-b295-9208e324dd3b"
  *         rating: 5
  */
 
@@ -81,7 +77,7 @@ const router = express.Router();
  *         description: Server error
  */
 
-router.post("/reviews", addReview);
+router.post("/reviews", authMiddleware, addReview);
 router.get("/reviews", fetchReviews);
 
 /**
@@ -157,7 +153,7 @@ router.get("/reviews", fetchReviews);
  */
 
 router.get("/reviews/:id", fetchReviewById);
-router.put("/reviews/:id", modifyReview);
-router.delete("/reviews/:id", removeReview);
+router.put("/reviews/:id", authMiddleware, modifyReview);
+router.delete("/reviews/:id", authMiddleware, removeReview);
 
 export default router;

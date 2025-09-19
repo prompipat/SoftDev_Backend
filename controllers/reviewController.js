@@ -9,6 +9,9 @@ import{
 export const addReview = async (req, res) => {
     try {
         const reviewData = req.body;
+        const userId = req.user.userData.id;
+        
+        reviewData.user_id = userId;
         const newReview = await createReview(reviewData);
         res.status(201).json(newReview);
     } catch (error) {
