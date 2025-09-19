@@ -14,6 +14,31 @@ const router = express.Router();
  * @swagger
  * components:
  *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: The user's unique identifier
+ *         name:
+ *           type: string
+ *           description: The user's name
+ *         email:
+ *           type: string
+ *           description: The user's email address
+ *         role:
+ *           type: string
+ *           description: The user's role
+ *         profile_picture:
+ *           type: string
+ *           description: URL to the user's profile picture
+ *       example:
+ *         id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
+ *         name: "John Doe"
+ *         email: "johndoe@email.com"
+ *         role: "customer"
+ *         profile_picture: "https://example.com/profile.jpg"
+ * 
  *     Blog:
  *       type: object
  *       required:
@@ -37,13 +62,24 @@ const router = express.Router();
  *         user_id:
  *           type: string
  *           description: ID of the user who created the blog
+ *         user:
+ *           $ref: '#/components/schemas/User'
+ *           description: The user who authored the blog post. This is populated on retrieval.
  *       example:
- *         id: "550e8400-e29b-41d4-a716-446655440000"
+ *         id: "81249399-04ba-4778-afc6-ae74d9cfdf21"
  *         timestamp: "2025-12-25T18:30:00Z"
- *         title: "ร้านนี้อร่อยมาก"
+ *         title: "ร้านนี้อร่อยมาก123"
  *         detail: "ร้านนี้มีอาหารหลากหลายและรสชาติดีมากๆ แนะนำให้ลอง!"
- *         user_id: "user123"
- *     
+ *         user_id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
+ *         user:
+ *           id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
+ *           name: "John Doe"
+ *           email: "johndoe@email.com"
+ *           password: "password-is-removed" # For example purpose
+ *           profile_picture: "https://example.com/profile.jpg"
+ *           bio: "User bio"
+ *           role: "customer"
+ * 
  *     PaginationInfo:
  *       type: object
  *       properties:
@@ -72,7 +108,7 @@ const router = express.Router();
  *         itemsPerPage: 10
  *         hasNextPage: true
  *         hasPreviousPage: false
- *     
+ * 
  *     PaginatedBlogResponse:
  *       type: object
  *       properties:
@@ -121,6 +157,7 @@ const router = express.Router();
  *         description: Invalid input
  *       401:
  *         description: Unauthorized
+ * 
  *   get:
  *     summary: Get all blogs with pagination
  *     tags: [Blogs]
@@ -160,21 +197,30 @@ const router = express.Router();
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/PaginatedBlogResponse'
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Blog'
  *             example:
- *               data:
- *                 - id: "550e8400-e29b-41d4-a716-446655440000"
- *                   timestamp: "2025-12-25T18:30:00Z"
- *                   title: "ร้านนี้อร่อยมาก"
- *                   detail: "ร้านนี้มีอาหารหลากหลายและรสชาติดีมากๆ แนะนำให้ลอง!"
- *                   user_id: "user123"
- *               pagination:
- *                 currentPage: 1
- *                 totalPages: 5
- *                 totalItems: 47
- *                 itemsPerPage: 10
- *                 hasNextPage: true
- *                 hasPreviousPage: false
+ *                 data:
+ *                    - id: "81249399-04ba-4778-afc6-ae74d9cfdf21"
+ *                      timestamp: "2025-12-25T18:30:00Z"
+ *                      title: "ร้านนี้อร่อยมาก123"
+ *                      detail: "ร้านนี้มีอาหารหลากหลายและรสชาติดีมากๆ แนะนำให้ลอง!"
+ *                      user_id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
+ *                      user:
+ *                        id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
+ *                        name: "John Doe"
+ *                        email: "johndoe@email.com"
+ *                        role: "customer"
+ *                        password: "password-is-removed"
+ *                        profile_picture: "https://example.com/profile.jpg"
+ *                 pagination:
+ *                   currentPage: 1
+ *                   totalPages: 5
+ *                   totalItems: 47
+ *                   itemsPerPage: 10
+ *                   hasNextPage: true
+ *                   hasPreviousPage: false
  *       400:
  *         description: Invalid query parameters
  *         content:
@@ -227,6 +273,7 @@ router.get("/blogs", fetchBlogs);
  *         description: Blog not found
  *       500:
  *         description: Server error
+ * 
  *   put:
  *     summary: Update a blog
  *     tags: [Blogs]
@@ -266,6 +313,7 @@ router.get("/blogs", fetchBlogs);
  *         description: Invalid input
  *       401:
  *         description: Unauthorized
+ * 
  *   delete:
  *     summary: Delete a blog
  *     tags: [Blogs]

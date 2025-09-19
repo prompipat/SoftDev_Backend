@@ -11,7 +11,7 @@ export const createBlog = async (blogData) => {
         user_id: blogData.user_id
       }
     ])
-    .select();
+    .select("*, user:user_id(*)");
 
   if (error) throw new Error(error.message);
   return data;
@@ -28,7 +28,7 @@ export const getBlog = async (page = 1, limit = 10, sortBy = 'timestamp', sortOr
 
   const { data, error } = await supabase
     .from("blogs")
-    .select("*")
+    .select("*, user:user_id(*)")
     .order(sortBy, { ascending: sortOrder === 'asc' })
     .range(offset, offset + limit - 1);
 
@@ -52,7 +52,7 @@ export const getBlog = async (page = 1, limit = 10, sortBy = 'timestamp', sortOr
 export const getBlogById = async (id) => {
   const { data, error } = await supabase
     .from("blogs")
-    .select("*")
+    .select("*, user:user_id(*)")
     .eq("id", id)
     .single();
 
@@ -65,7 +65,7 @@ export const updateBlog = async (id, updates) => {
     .from("blogs")
     .update(updates)
     .eq("id", id)
-    .select();
+    .select("*, user:user_id(*)");
 
   if (error) throw new Error(error.message);
   return data;
