@@ -1,4 +1,5 @@
 import express from "express";
+import { authMiddleware } from "../services/authMiddleware.js";
 import {
   addRestaurant,
   fetchRestaurants,
@@ -18,7 +19,6 @@ const router = express.Router();
  *       required:
  *         - name
  *         - description
- *         - user_id
  *         - category_id
  *       properties:
  *         name:
@@ -27,16 +27,12 @@ const router = express.Router();
  *         description:
  *           type: string
  *           description: Restaurant's description
- *         user_id:
- *           type: string
- *           description: ID of the user who owns the restaurant
  *         category_id:
  *           type: string
  *           description: ID of the category the restaurant belongs to
  *       example:
  *         name: Tasty Corner
  *         description: Best street food in town
- *         user_id: "12345"
  *         category_id: "67890"
  */
 
@@ -44,8 +40,10 @@ const router = express.Router();
  * @swagger
  * /api/restaurants:
  *   post:
- *     summary: Create a new restaurant
+ *     summary: Create a new restaurant (requires authentication)
  *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -55,10 +53,6 @@ const router = express.Router();
  *     responses:
  *       201:
  *         description: Restaurant created successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Restaurant'
  *       400:
  *         description: Invalid input
  *   get:
@@ -67,16 +61,10 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: List of all restaurants
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Restaurant'
  *       500:
  *         description: Server error
  */
-router.post("/restaurants", addRestaurant);
+router.post("/restaurants", authMiddleware, addRestaurant); 
 router.get("/restaurants", fetchRestaurants);
 
 /**
@@ -147,7 +135,7 @@ router.get("/restaurants", fetchRestaurants);
  *         description: Server error
  */
 router.get("/restaurants/:id", fetchRestaurantById);
-router.put("/restaurants/:id", modifyRestaurant);
-router.delete("/restaurants/:id", removeRestaurant);
+router.put("/restaurants/:id", authMiddleware, modifyRestaurant); 
+router.delete("/restaurants/:id", authMiddleware, removeRestaurant); 
 
 export default router;
