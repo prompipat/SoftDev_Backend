@@ -201,18 +201,26 @@ const router = express.Router();
  *               items:
  *                 $ref: '#/components/schemas/Blog'
  *             example:
- *               - id: "81249399-04ba-4778-afc6-ae74d9cfdf21"
- *                 timestamp: "2025-12-25T18:30:00Z"
- *                 title: "ร้านนี้อร่อยมาก123"
- *                 detail: "ร้านนี้มีอาหารหลากหลายและรสชาติดีมากๆ แนะนำให้ลอง!"
- *                 user_id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
- *                 user:
- *                   id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
- *                   name: "John Doe"
- *                   email: "johndoe@email.com"
- *                   role: "customer"
- *                   password: "password-is-removed"
- *                   profile_picture: "https://example.com/profile.jpg"
+ *                 data:
+ *                    - id: "81249399-04ba-4778-afc6-ae74d9cfdf21"
+ *                      timestamp: "2025-12-25T18:30:00Z"
+ *                      title: "ร้านนี้อร่อยมาก123"
+ *                      detail: "ร้านนี้มีอาหารหลากหลายและรสชาติดีมากๆ แนะนำให้ลอง!"
+ *                      user_id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
+ *                      user:
+ *                        id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
+ *                        name: "John Doe"
+ *                        email: "johndoe@email.com"
+ *                        role: "customer"
+ *                        password: "password-is-removed"
+ *                        profile_picture: "https://example.com/profile.jpg"
+ *                 pagination:
+ *                   currentPage: 1
+ *                   totalPages: 5
+ *                   totalItems: 47
+ *                   itemsPerPage: 10
+ *                   hasNextPage: true
+ *                   hasPreviousPage: false
  *       400:
  *         description: Invalid query parameters
  *         content:
