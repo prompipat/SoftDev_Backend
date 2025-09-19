@@ -3,7 +3,14 @@ import supabase from "../config/supabaseClient.js";
 export const createReview = async (reviewData) => {
   const { data, error } = await supabase
     .from("reviews")
-    .insert([reviewData])
+    .insert([
+      {
+        review_info: reviewData.review_info,
+        restaurant_id: reviewData.restaurant_id,
+        user_id: reviewData.user_id,
+        rating: reviewData.rating
+      }
+    ])
     .select();
 
   if (error) throw new Error(error.message);

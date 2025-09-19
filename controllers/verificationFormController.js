@@ -9,6 +9,9 @@ import {
 export const addVerificationForm = async (req, res) => {
   try {
     const verificationFormData = req.body;
+    const userId = req.user.userData.id;
+
+    verificationFormData.user_id = userId;
     const newForm = await createVerificationForm(verificationFormData);
     res.status(201).json(newForm);
   } catch (error) {
