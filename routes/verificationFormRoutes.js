@@ -1,4 +1,5 @@
 import express from "express";
+import { authMiddleware } from "../services/authMiddleware.js";
 import {
   addVerificationForm,
   fetchVerificationForms,
@@ -16,14 +17,10 @@ const router = express.Router();
  *     VerificationForm:
  *       type: object
  *       required:
- *         - user_id
  *         - restaurant_id
  *         - verification_info
  *         - status
  *       properties:
- *         user_id:
- *           type: string
- *           description: ID of the admin reviewing the form
  *         restaurant_id:
  *           type: string
  *           description: ID of the restaurant being verified
@@ -35,7 +32,6 @@ const router = express.Router();
  *           enum: [pending, approved, rejected]
  *           description: Current status of the verification form
  *       example:
- *         user_id: "12345"
  *         restaurant_id: "67890"
  *         verification_info: "Business license and documents verified"
  *         status: "pending"
@@ -77,7 +73,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/verification-forms", addVerificationForm);
+router.post("/verification-forms", authMiddleware, addVerificationForm);
 router.get("/verification-forms", fetchVerificationForms);
 
 /**
@@ -147,8 +143,8 @@ router.get("/verification-forms", fetchVerificationForms);
  *       500:
  *         description: Server error
  */
-router.get("/verification-forms/:id", fetchVerificationFormById);
-router.put("/verification-forms/:id", modifyVerificationForm);
-router.delete("/verification-forms/:id", removeVerificationForm);
+router.get("/verification-forms/:id", authMiddleware, fetchVerificationFormById);
+router.put("/verification-forms/:id", authMiddleware, modifyVerificationForm);
+router.delete("/verification-forms/:id", authMiddleware, removeVerificationForm);
 
 export default router;
