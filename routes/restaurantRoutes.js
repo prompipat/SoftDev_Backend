@@ -5,7 +5,8 @@ import {
   fetchRestaurants,
   fetchRestaurantById,
   modifyRestaurant,
-  removeRestaurant
+  removeRestaurant,
+  findRestaurants
 } from "../controllers/restaurantController.js";
 
 const router = express.Router();
@@ -134,6 +135,58 @@ router.get("/restaurants", fetchRestaurants);
  *       500:
  *         description: Server error
  */
+/**
+ * @swagger
+ * /api/restaurants/search:
+ *   get:
+ *     summary: Search restaurants with pagination
+ *     tags: [Restaurants]
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Search term for name, description, or category
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Paginated search results
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       categories:
+ *                         type: object
+ *                       restaurants_images:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                 pagination:
+ *                   type: object
+ */
+router.get("/restaurants/search", findRestaurants);
 router.get("/restaurants/:id", fetchRestaurantById);
 router.put("/restaurants/:id", authMiddleware, modifyRestaurant); 
 router.delete("/restaurants/:id", authMiddleware, removeRestaurant); 
