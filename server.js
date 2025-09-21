@@ -19,6 +19,7 @@ import restaurantMainCategoryRoutes from "./routes/restaurantMainCategoryRoutes.
 import restaurantEventCategoryRoutes from "./routes/restaurantEventCategoryRoutes.js";
 import restaurantFoodCategoryRoutes from "./routes/restaurantFoodCategoryRoutes.js";
 import restaurantMainCategoryMapRoutes from "./routes/restaurantMainCategoryMapRoutes.js";
+import restaurantEventCategoryMapRoutes from "./routes/restaurantEventCategoryMapRoutes.js";
 import { swaggerUi, specs } from "./config/swagger.js";
 
 dotenv.config();
@@ -48,6 +49,7 @@ app.use("/api", restaurantMainCategoryRoutes);
 app.use("/api", restaurantEventCategoryRoutes);
 app.use("/api", restaurantFoodCategoryRoutes);
 app.use("/api", restaurantMainCategoryMapRoutes);
+app.use("/api", restaurantEventCategoryMapRoutes);
 app.get("/", (req, res) => {
   res.send("API is running... <a href='/api-docs'>View API documentation</a>");
 });
