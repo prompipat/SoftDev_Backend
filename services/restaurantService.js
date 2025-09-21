@@ -2,42 +2,103 @@ import supabase from "../config/supabaseClient.js";
 
 export const createRestaurant = async (restaurantData) => {
   const existing = await findRestaurantByName(restaurantData.name);
-  if (existing) {
-    throw new Error("Restaurant already exists");
-  }
+  if (existing) throw new Error("Restaurant already exists");
 
   const { data, error } = await supabase
     .from("restaurants")
-    .insert([
-      {
-        name: restaurantData.name,
-        description: restaurantData.description,
-        user_id: restaurantData.user_id,
-        category_id: restaurantData.category_id,
-      },
-    ])
+    .insert([{
+      name: restaurantData.name,
+      description: restaurantData.description,
+      user_id: restaurantData.user_id,
+      tax_id: restaurantData.tax_id,
+      sub_location: restaurantData.sub_location,
+      location: restaurantData.location,
+    }])
     .select()
     .single();
+
   if (error) throw new Error(error.message);
   return data;
 };
+export const getRestaurants = async (page = 1, limit = 10) => {
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
-export const getRestaurants = async () => {
-  const { data, error } = await supabase.from("restaurants").select("*");
+  const { data, error } = await supabase
+    .from("restaurants")
+    .select(`
+      id, name, description,
+      restaurants_images ( id, url, filename ),
+      restaurant_food_category_map (
+        food_category:restaurant_food_categories ( id, name )
+      ),
+      restaurant_event_category_map (
+        event_category:restaurant_event_categories ( id, name )
+      ),
+      restaurant_main_category_map (
+        main_category:restaurant_main_category ( id, name )
+      )
+    `)
+    .range(from, to);
 
-  if (error) throw new Error(error.message);
-  return data;
+  if (error) throw error;
+
+  // Normalize results
+  const restaurants = (data ?? []).map(r => ({
+    id: r.id,
+    name: r.name,
+    description: r.description,
+    images: (r.restaurants_images ?? []).map(img => ({
+      id: img.id,
+      url: img.url,
+      filename: img.filename
+    })),
+    food_categories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
+    event_categories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
+    main_categories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category)
+  }));
+
+  return restaurants;
 };
 
 export const getRestaurantById = async (id) => {
   const { data, error } = await supabase
     .from("restaurants")
-    .select("*")
+    .select(`
+      id, name, description,
+      restaurants_images ( id, url, filename ),
+      restaurant_food_category_map (
+        food_category:restaurant_food_categories ( id, name )
+      ),
+      restaurant_event_category_map (
+        event_category:restaurant_event_categories ( id, name )
+      ),
+      restaurant_main_category_map (
+        main_category:restaurant_main_category ( id, name )
+      )
+    `)
     .eq("id", id)
-    .maybeSingle();
+    .single();
 
-  if (error) throw new Error(error.message);
-  return data;
+  if (error) throw error;
+
+  if (!data) return null;
+
+  const restaurant = {
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    images: (data.restaurants_images ?? []).map(img => ({
+      id: img.id,
+      url: img.url,
+      filename: img.filename
+    })),
+    food_categories: (data.restaurant_food_category_map ?? []).map(fc => fc.food_category),
+    event_categories: (data.restaurant_event_category_map ?? []).map(ec => ec.event_category),
+    main_categories: (data.restaurant_main_category_map ?? []).map(mc => mc.main_category)
+  };
+
+  return restaurant;
 };
 
 export const updateRestaurant = async (id, updates) => {
@@ -47,19 +108,15 @@ export const updateRestaurant = async (id, updates) => {
     .eq("id", id)
     .select()
     .single();
-
   if (error) throw new Error(error.message);
   return data;
 };
 
 export const deleteRestaurant = async (id) => {
   const existing = await getRestaurantById(id);
-  if (!existing) {
-    throw new Error("Restaurant not found");
-  }
+  if (!existing) throw new Error("Restaurant not found");
 
   const { error } = await supabase.from("restaurants").delete().eq("id", id);
-
   if (error) throw new Error(error.message);
   return { success: true, message: "Restaurant deleted successfully" };
 };
@@ -69,95 +126,74 @@ export const findRestaurantByName = async (name) => {
     .from("restaurants")
     .select("*")
     .eq("name", name)
-    .maybeSingle(); // returns null if not found
-
+    .maybeSingle();
   if (error) throw new Error(error.message);
   return data;
 };
 
-
-
-export const searchRestaurants = async (query, page = 1, limit = 10) => {
+// --- SEARCH & FILTER --- //
+export const searchRestaurants = async (query, filters = {}, page = 1, limit = 10) => {
   try {
-    // search in restaurants 
-    const { data: restaurantMatches, error: restaurantError } = await supabase
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    let builder = supabase
       .from("restaurants")
       .select(`
-        id,
-        name,
-        description,
-        user_id,
-        category_id,
-        categories (
-          id,
-          name
+        id, name, description,
+        restaurants_images ( id, url, filename ),
+        restaurant_main_category_map (
+          main_category:restaurant_main_category ( id, name )
         ),
-        restaurants_images (
-          id,
-          url,
-          filename
+        restaurant_food_category_map (
+          food_category:restaurant_food_categories ( id, name )
+        ),
+        restaurant_event_category_map (
+          event_category:restaurant_event_categories ( id, name )
         )
-      `)
-      .or(`name.ilike.%${query}%,description.ilike.%${query}%`);
+      `, { count: "exact" })
+      .ilike("name", `%${query}%`)
+      .range(from, to);
 
-    if (restaurantError) throw new Error(restaurantError.message);
+    // --- Apply filters if provided --- //
+    // TODO: Fix filter !!!
+    // if (filters.main_category_id) {
+    //   builder = builder.eq("restaurant_main_category_map.main_category_id", filters.main_category_id);
+    // }
+    // if (filters.food_category_id) {
+    //   builder = builder.eq("restaurant_food_category_map.food_category_id", filters.food_category_id);
+    // }
+    // if (filters.event_category_id) {
+    //   builder = builder.eq("restaurant_event_category_map.event_category_id", filters.event_category_id);
+    // }
 
-    // search in categories 
-    const { data: categoryMatches, error: categoryError } = await supabase
-      .from("categories")
-      .select("id, name")
-      .ilike("name", `%${query}%`);
 
-    if (categoryError) throw new Error(categoryError.message);
+    const { data, error, count } = await builder;
+    if (error) throw new Error(error.message);
 
-    let categoryRestaurants = [];
-    if (categoryMatches?.length > 0) {
-      const categoryIds = categoryMatches.map((c) => c.id);
-
-      const { data, error } = await supabase
-        .from("restaurants")
-        .select(`
-          id,
-          name,
-          description,
-          user_id,
-          category_id,
-          categories (
-            id,
-            name
-          ),
-          restaurants_images (
-            id,
-            url,
-            filename
-          )
-        `)
-        .in("category_id", categoryIds);
-
-      if (error) throw new Error(error.message);
-      categoryRestaurants = data;
-    }
-
-    
-    const allResults = [...restaurantMatches, ...categoryRestaurants];
-    const uniqueResults = Array.from(
-      new Map(allResults.map((r) => [r.id, r])).values()
-    );
-
-    // --- pagination ---
-    const totalItems = uniqueResults.length;
-    const totalPages = Math.ceil(totalItems / limit);
-    const offset = (page - 1) * limit;
-    const paginatedResults = uniqueResults.slice(offset, offset + limit);
+    // --- normalize result --- //
+    const restaurants = (data ?? []).map(r => ({
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      images: (r.restaurants_images ?? []).map(img => ({
+        id: img.id,
+        url: img.url,
+        filename: img.filename,
+      })),
+      food_categories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
+      event_categories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
+      main_categories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category),
+    }));
 
     return {
-      data: paginatedResults,
+      data: restaurants,
       pagination: {
         currentPage: page,
-        totalPages,
-        totalItems,
+        totalPages: Math.ceil((count ?? 0) / limit),
+        totalItems: count ?? 0,
         itemsPerPage: limit,
-        hasNextPage: page < totalPages,
+        hasNextPage: page * limit < (count ?? 0),
         hasPreviousPage: page > 1,
       },
     };

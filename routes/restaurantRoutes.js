@@ -20,7 +20,69 @@ const router = express.Router();
  *       required:
  *         - name
  *         - description
- *         - category_id
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Restaurant UUID
+ *         name:
+ *           type: string
+ *           description: Restaurant's name
+ *         description:
+ *           type: string
+ *           description: Restaurant's description
+ *         user_id:
+ *           type: string
+ *           description: Owner user ID
+ *         tax_id:
+ *           type: string
+ *           description: Tax ID
+ *         sub_location:
+ *           type: string
+ *         location:
+ *           type: string
+ *         main_categories:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *         food_categories:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *         event_categories:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *       example:
+ *         id: "123e4567-e89b-12d3-a456-426614174000"
+ *         name: Tasty Corner
+ *         description: Best street food in town
+ *         user_id: "user-uuid-001"
+ *         tax_id: "TX123456"
+ *         sub_location: "Downtown"
+ *         location: "Bangkok"
+ *         main_categories: [{ id: "1", name: "Snack Box" }]
+ *         food_categories: [{ id: "2", name: "Dessert" }]
+ *         event_categories: [{ id: "3", name: "Party Event" }]
+ *     CreateRestaurant:
+ *       type: object
+ *       required:
+ *         - name
+ *         - description
  *       properties:
  *         name:
  *           type: string
@@ -28,13 +90,19 @@ const router = express.Router();
  *         description:
  *           type: string
  *           description: Restaurant's description
- *         category_id:
+ *         tax_id:
  *           type: string
- *           description: ID of the category the restaurant belongs to
+ *           description: Tax ID
+ *         sub_location:
+ *           type: string
+ *         location:
+ *           type: string
  *       example:
  *         name: Tasty Corner
  *         description: Best street food in town
- *         category_id: "67890"
+ *         tax_id: "TX123456"
+ *         sub_location: "Downtown"
+ *         location: "Bangkok"
  */
 
 /**
@@ -50,29 +118,39 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Restaurant'
+ *             $ref: '#/components/schemas/CreateRestaurant'
  *     responses:
  *       201:
  *         description: Restaurant created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Restaurant'
  *       400:
  *         description: Invalid input
  *   get:
- *     summary: Get all restaurants
+ *     summary: Get all restaurants with populated categories
  *     tags: [Restaurants]
  *     responses:
  *       200:
  *         description: List of all restaurants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Restaurant'
  *       500:
  *         description: Server error
  */
-router.post("/restaurants", authMiddleware, addRestaurant); 
+router.post("/restaurants", authMiddleware, addRestaurant);
 router.get("/restaurants", fetchRestaurants);
 
 /**
  * @swagger
  * /api/restaurants/{id}:
  *   get:
- *     summary: Get a restaurant by ID
+ *     summary: Get a restaurant by ID with populated categories
  *     tags: [Restaurants]
  *     parameters:
  *       - in: path
@@ -80,7 +158,7 @@ router.get("/restaurants", fetchRestaurants);
  *         schema:
  *           type: string
  *         required: true
- *         description: ID of the restaurant
+ *         description: Restaurant UUID
  *     responses:
  *       200:
  *         description: Restaurant details
@@ -93,15 +171,17 @@ router.get("/restaurants", fetchRestaurants);
  *       500:
  *         description: Server error
  *   put:
- *     summary: Update a restaurant
+ *     summary: Update a restaurant (requires authentication)
  *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: ID of the restaurant
+ *         description: Restaurant UUID
  *     requestBody:
  *       required: true
  *       content:
@@ -120,34 +200,55 @@ router.get("/restaurants", fetchRestaurants);
  *       400:
  *         description: Invalid input
  *   delete:
- *     summary: Delete a restaurant
+ *     summary: Delete a restaurant (requires authentication)
  *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: ID of the restaurant
+ *         description: Restaurant UUID
  *     responses:
  *       200:
  *         description: Restaurant deleted successfully
  *       500:
  *         description: Server error
  */
+
 /**
  * @swagger
  * /api/restaurants/search:
  *   get:
- *     summary: Search restaurants with pagination
+ *     summary: Search restaurants with filters and pagination
  *     tags: [Restaurants]
  *     parameters:
  *       - in: query
  *         name: query
  *         schema:
  *           type: string
- *         required: true
- *         description: Search term for name, description, or category
+ *         required: false
+ *         description: Search term for name or description
+ *       - in: query
+ *         name: main_category_id
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by main category
+ *       - in: query
+ *         name: food_category_id
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by food category
+ *       - in: query
+ *         name: event_category_id
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by event category
  *       - in: query
  *         name: page
  *         schema:
@@ -169,26 +270,26 @@ router.get("/restaurants", fetchRestaurants);
  *                 data:
  *                   type: array
  *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                       name:
- *                         type: string
- *                       description:
- *                         type: string
- *                       categories:
- *                         type: object
- *                       restaurants_images:
- *                         type: array
- *                         items:
- *                           type: object
+ *                     $ref: '#/components/schemas/Restaurant'
  *                 pagination:
  *                   type: object
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *                     totalItems:
+ *                       type: integer
+ *                     itemsPerPage:
+ *                       type: integer
+ *                     hasNextPage:
+ *                       type: boolean
+ *                     hasPreviousPage:
+ *                       type: boolean
  */
 router.get("/restaurants/search", findRestaurants);
 router.get("/restaurants/:id", fetchRestaurantById);
-router.put("/restaurants/:id", authMiddleware, modifyRestaurant); 
-router.delete("/restaurants/:id", authMiddleware, removeRestaurant); 
+router.put("/restaurants/:id", authMiddleware, modifyRestaurant);
+router.delete("/restaurants/:id", authMiddleware, removeRestaurant);
 
 export default router;
