@@ -16,6 +16,7 @@ import packageImageRoutes from "./routes/packageImageRoutes.js";
 import packageRoutes from "./routes/packageRoutes.js";
 import verificationFormRoutes from "./routes/verificationFormRoutes.js";
 import restaurantMainCategoryRoutes from "./routes/restaurantMainCategoryRoutes.js";
+import restaurantEventCategoryRoutes from "./routes/restaurantEventCategoryRoutes.js";
 import { swaggerUi, specs } from "./config/swagger.js";
 
 dotenv.config();
@@ -42,6 +43,7 @@ app.use("/api", packageImageRoutes);
 app.use("/api", packageRoutes);
 app.use("/api", verificationFormRoutes);
 app.use("/api", restaurantMainCategoryRoutes);
+app.use("/api", restaurantEventCategoryRoutes);
 app.get("/", (req, res) => {
   res.send("API is running... <a href='/api-docs'>View API documentation</a>");
 });
