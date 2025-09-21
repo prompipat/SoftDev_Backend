@@ -1,6 +1,5 @@
 import supabase from "../config/supabaseClient.js";
 
-// --- CRUD --- //
 export const createRestaurant = async (restaurantData) => {
   const existing = await findRestaurantByName(restaurantData.name);
   if (existing) throw new Error("Restaurant already exists");
@@ -21,53 +20,85 @@ export const createRestaurant = async (restaurantData) => {
   if (error) throw new Error(error.message);
   return data;
 };
+export const getRestaurants = async (page = 1, limit = 10) => {
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
-export const getRestaurants = async () => {
   const { data, error } = await supabase
     .from("restaurants")
     .select(`
-      *,
-      restaurant_main_category_map!inner(
-        main_category_id,
-        main_category:restaurant_main_category(id, name)
+      id, name, description,
+      restaurants_images ( id, url, filename ),
+      restaurant_food_category_map (
+        food_category:restaurant_food_categories ( id, name )
       ),
-      restaurant_food_category_map!inner(
-        food_category_id,
-        food_category:restaurant_food_categories(id, name)
+      restaurant_event_category_map (
+        event_category:restaurant_event_categories ( id, name )
       ),
-      restaurant_event_category_map!inner(
-        event_category_id,
-        event_category:restaurant_event_categories(id, name)
+      restaurant_main_category_map (
+        main_category:restaurant_main_category ( id, name )
       )
-    `);
+    `)
+    .range(from, to);
 
-  if (error) throw new Error(error.message);
-  return data;
+  if (error) throw error;
+
+  // Normalize results
+  const restaurants = (data ?? []).map(r => ({
+    id: r.id,
+    name: r.name,
+    description: r.description,
+    images: (r.restaurants_images ?? []).map(img => ({
+      id: img.id,
+      url: img.url,
+      filename: img.filename
+    })),
+    food_categories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
+    event_categories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
+    main_categories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category)
+  }));
+
+  return restaurants;
 };
 
 export const getRestaurantById = async (id) => {
   const { data, error } = await supabase
     .from("restaurants")
     .select(`
-      *,
-      restaurant_main_category_map!inner(
-        main_category_id,
-        main_category:restaurant_main_category(id, name)
+      id, name, description,
+      restaurants_images ( id, url, filename ),
+      restaurant_food_category_map (
+        food_category:restaurant_food_categories ( id, name )
       ),
-      restaurant_food_category_map!inner(
-        food_category_id,
-        food_category:restaurant_food_categories(id, name)
+      restaurant_event_category_map (
+        event_category:restaurant_event_categories ( id, name )
       ),
-      restaurant_event_category_map!inner(
-        event_category_id,
-        event_category:restaurant_event_categories(id, name)
+      restaurant_main_category_map (
+        main_category:restaurant_main_category ( id, name )
       )
     `)
     .eq("id", id)
-    .maybeSingle();
+    .single();
 
-  if (error) throw new Error(error.message);
-  return data;
+  if (error) throw error;
+
+  if (!data) return null;
+
+  const restaurant = {
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    images: (data.restaurants_images ?? []).map(img => ({
+      id: img.id,
+      url: img.url,
+      filename: img.filename
+    })),
+    food_categories: (data.restaurant_food_category_map ?? []).map(fc => fc.food_category),
+    event_categories: (data.restaurant_event_category_map ?? []).map(ec => ec.event_category),
+    main_categories: (data.restaurant_main_category_map ?? []).map(mc => mc.main_category)
+  };
+
+  return restaurant;
 };
 
 export const updateRestaurant = async (id, updates) => {
@@ -103,54 +134,66 @@ export const findRestaurantByName = async (name) => {
 // --- SEARCH & FILTER --- //
 export const searchRestaurants = async (query, filters = {}, page = 1, limit = 10) => {
   try {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
     let builder = supabase
       .from("restaurants")
       .select(`
-        *,
-        restaurant_main_category_map!inner(
-          main_category_id,
-          main_category:restaurant_main_category(id, name)
+        id, name, description,
+        restaurants_images ( id, url, filename ),
+        restaurant_main_category_map (
+          main_category:restaurant_main_category ( id, name )
         ),
-        restaurant_food_category_map!inner(
-          food_category_id,
-          food_category:restaurant_food_categories(id, name)
+        restaurant_food_category_map (
+          food_category:restaurant_food_categories ( id, name )
         ),
-        restaurant_event_category_map!inner(
-          event_category_id,
-          event_category:restaurant_event_categories(id, name)
+        restaurant_event_category_map (
+          event_category:restaurant_event_categories ( id, name )
         )
-      `)
-      .ilike("name", `%${query}%`);
+      `, { count: "exact" })
+      .ilike("name", `%${query}%`)
+      .range(from, to);
 
     // --- Apply filters if provided --- //
-    // TODO: Fix Filter !!!
+    // TODO: Fix filter !!!
     // if (filters.main_category_id) {
-    //   builder = builder.contains("restaurant_main_category_map", [{ main_category_id: filters.main_category_id }]);
+    //   builder = builder.eq("restaurant_main_category_map.main_category_id", filters.main_category_id);
     // }
     // if (filters.food_category_id) {
-    //   builder = builder.contains("restaurant_food_category_map", [{ food_category_id: filters.food_category_id }]);
+    //   builder = builder.eq("restaurant_food_category_map.food_category_id", filters.food_category_id);
     // }
     // if (filters.event_category_id) {
-    //   builder = builder.contains("restaurant_event_category_map", [{ event_category_id: filters.event_category_id }]);
+    //   builder = builder.eq("restaurant_event_category_map.event_category_id", filters.event_category_id);
     // }
 
-    const { data, error } = await builder;
+
+    const { data, error, count } = await builder;
     if (error) throw new Error(error.message);
 
-    // --- pagination --- //
-    const totalItems = data.length;
-    const totalPages = Math.ceil(totalItems / limit);
-    const offset = (page - 1) * limit;
-    const paginatedResults = data.slice(offset, offset + limit);
+    // --- normalize result --- //
+    const restaurants = (data ?? []).map(r => ({
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      images: (r.restaurants_images ?? []).map(img => ({
+        id: img.id,
+        url: img.url,
+        filename: img.filename,
+      })),
+      food_categories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
+      event_categories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
+      main_categories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category),
+    }));
 
     return {
-      data: paginatedResults,
+      data: restaurants,
       pagination: {
         currentPage: page,
-        totalPages,
-        totalItems,
+        totalPages: Math.ceil((count ?? 0) / limit),
+        totalItems: count ?? 0,
         itemsPerPage: limit,
-        hasNextPage: page < totalPages,
+        hasNextPage: page * limit < (count ?? 0),
         hasPreviousPage: page > 1,
       },
     };
