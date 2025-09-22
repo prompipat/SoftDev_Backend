@@ -20,11 +20,14 @@ const router = express.Router();
  *         - status
  *         - location
  *         - event_date
- *         - participant
  *         - package_id
  *         - restaurant_id
+ *         - start_time
+ *         - end_time
+ *         - package_detail_id
+ * 
  *       properties:
- *         status:
+ *       status:
  *           type: string
  *           description: status of the order
  *       location:
@@ -48,6 +51,12 @@ const router = express.Router();
  *          type: date
  *          format: date-time
  *          description: date of the event
+ *       message:
+ *          type: string
+ *          description: additional message for the order
+ *       package_detail_id:
+ *          type: foreign key
+ *          description: id of the package detail
  *       example:
  *         status: pending
  *         location: "123 ถนนพหลโยธิน แขวงลาดยาว เขตจตุจักร กรุงเทพฯ 10900"
@@ -56,6 +65,8 @@ const router = express.Router();
  *         start_time: "10:00:00Z"
  *         end_time: "14:00:00Z"
  *         event_date: "2023-10-10"
+ *         message: "กรุณาเตรียมอาหารให้ทันเวลานะครับ"
+ *         package_detail_id: "uuid-v4-string"
  */
 
 /**

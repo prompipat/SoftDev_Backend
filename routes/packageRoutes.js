@@ -10,6 +10,7 @@ import {
 
 const router = express.Router();
 
+
 /**
  * @swagger
  * components:
@@ -19,7 +20,8 @@ const router = express.Router();
  *       required:
  *         - restaurant_id
  *         - name
- *         - price
+ *         - description
+ *         - category_id
  *       properties:
  *         id:
  *           type: string
@@ -30,18 +32,39 @@ const router = express.Router();
  *         name:
  *           type: string
  *           description: Name of the package
- *         price:
- *           type: number
- *           format: float
- *           description: Price of the package
  *         description:
  *           type: string
  *           description: Detailed description of the package
+ *         category_id:
+ *           type: string
+ *           description: ID of the package category
+ *         discount:
+ *           type: number
+ *           format: float
+ *           description: Discount on the package
+ *         start_discount_date:
+ *           type: string
+ *           format: date
+ *           description: Start date of the discount
+ *         end_discount_date:
+ *           type: string
+ *           format: date
+ *           description: End date of the discount
  *       example:
  *         restaurant_id: "2b0c14bd-7bbd-431a-9282-5abe5d461f80"
  *         name: "Family Feast"
- *         price: 49.99
  *         description: "A full meal package for a family of four."
+ *         category_id: "123e4567-e89b-12d3-a456-426614174000"
+ *         discount: null
+ *         start_discount_date: null
+ *         end_discount_date: null
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Packages
+ *   description: Package management API
  */
 
 /**
@@ -126,10 +149,6 @@ router.get("/packages", fetchPackages);
  *     responses:
  *       200:
  *         description: Package updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Package'
  *       400:
  *         description: Invalid input
  *       404:
@@ -158,5 +177,6 @@ router.get("/packages", fetchPackages);
 router.get("/packages/:id", fetchPackageById);
 router.put("/packages/:id", modifyPackage);
 router.delete("/packages/:id", removePackage);
+
 
 export default router;
