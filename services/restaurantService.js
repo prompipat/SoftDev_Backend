@@ -131,13 +131,15 @@ export const findRestaurantByName = async (name) => {
   return data;
 };
 
+
 // --- SEARCH & FILTER --- //
 export const searchRestaurants = async (query, filters = {}, page = 1, limit = 10) => {
   try {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    let builder = supabase
+    // --- Base query: search in name OR description ---
+    let baseBuilder = supabase
       .from("restaurants")
       .select(`
         id, name, description,
@@ -152,26 +154,59 @@ export const searchRestaurants = async (query, filters = {}, page = 1, limit = 1
           event_category:restaurant_event_categories ( id, name )
         )
       `, { count: "exact" })
-      .ilike("name", `%${query}%`)
-      .range(from, to);
+      .or(`name.ilike.%${query}%,description.ilike.%${query}%`);
 
     // --- Apply filters if provided --- //
-    // TODO: Fix filter !!!
-    // if (filters.main_category_id) {
-    //   builder = builder.eq("restaurant_main_category_map.main_category_id", filters.main_category_id);
-    // }
-    // if (filters.food_category_id) {
-    //   builder = builder.eq("restaurant_food_category_map.food_category_id", filters.food_category_id);
-    // }
-    // if (filters.event_category_id) {
-    //   builder = builder.eq("restaurant_event_category_map.event_category_id", filters.event_category_id);
-    // }
+    if (filters.main_category_id) {
+      const { data: mainMatches, error: mainError } = await supabase
+        .from("restaurant_main_category_map")
+        .select("restaurant_id")
+        .eq("main_category_id", filters.main_category_id);
 
+      if (mainError) throw new Error(mainError.message);
+      const ids = mainMatches.map(r => r.restaurant_id);
+      if (ids.length > 0) {
+        baseBuilder = baseBuilder.in("id", ids);
+      } else {
+        return emptyResult(page, limit);
+      }
+    }
 
-    const { data, error, count } = await builder;
+    if (filters.food_category_id) {
+      const { data: foodMatches, error: foodError } = await supabase
+        .from("restaurant_food_category_map")
+        .select("restaurant_id")
+        .eq("food_category_id", filters.food_category_id);
+
+      if (foodError) throw new Error(foodError.message);
+      const ids = foodMatches.map(r => r.restaurant_id);
+      if (ids.length > 0) {
+        baseBuilder = baseBuilder.in("id", ids);
+      } else {
+        return emptyResult(page, limit);
+      }
+    }
+
+    if (filters.event_category_id) {
+      const { data: eventMatches, error: eventError } = await supabase
+        .from("restaurant_event_category_map")
+        .select("restaurant_id")
+        .eq("event_category_id", filters.event_category_id);
+
+      if (eventError) throw new Error(eventError.message);
+      const ids = eventMatches.map(r => r.restaurant_id);
+      if (ids.length > 0) {
+        baseBuilder = baseBuilder.in("id", ids);
+      } else {
+        return emptyResult(page, limit);
+      }
+    }
+
+    // --- Apply pagination ---
+    const { data, error, count } = await baseBuilder.range(from, to);
     if (error) throw new Error(error.message);
 
-    // --- normalize result --- //
+    // --- Normalize result ---
     const restaurants = (data ?? []).map(r => ({
       id: r.id,
       name: r.name,
@@ -201,3 +236,16 @@ export const searchRestaurants = async (query, filters = {}, page = 1, limit = 1
     throw new Error(err.message);
   }
 };
+
+// --- Helper for empty results ---
+const emptyResult = (page, limit) => ({
+  data: [],
+  pagination: {
+    currentPage: page,
+    totalPages: 0,
+    totalItems: 0,
+    itemsPerPage: limit,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  },
+});
