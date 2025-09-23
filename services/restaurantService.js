@@ -37,26 +37,38 @@ export const getRestaurants = async (page = 1, limit = 10) => {
       ),
       restaurant_main_category_map (
         main_category:restaurant_main_category ( id, name )
-      )
+      ),
+      reviews (id, review_info, rating)
     `)
     .range(from, to);
 
   if (error) throw error;
 
-  // Normalize results
-  const restaurants = (data ?? []).map(r => ({
-    id: r.id,
-    name: r.name,
-    description: r.description,
-    images: (r.restaurants_images ?? []).map(img => ({
-      id: img.id,
-      url: img.url,
-      filename: img.filename
-    })),
-    food_categories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
-    event_categories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
-    main_categories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category)
-  }));
+  const restaurants = (data ?? []).map(r => {
+    const reviews = r.reviews;
+    const ratings = reviews.map(rv => rv.rating).filter(r => typeof r === "number");
+    const totalReview = ratings.length;
+    const avgRating = totalReview > 0
+      ? ratings.reduce((sum, val) => sum + val, 0) / totalReview
+      : null;
+
+    return {
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      images: (r.restaurants_images ?? []).map(img => ({
+        id: img.id,
+        url: img.url,
+        filename: img.filename
+      })),
+      foodCategories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
+      eventCategories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
+      mainCategories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category),
+      avgRating,
+      reviews,
+      totalReview
+    };
+  });
 
   return restaurants;
 };
@@ -75,14 +87,22 @@ export const getRestaurantById = async (id) => {
       ),
       restaurant_main_category_map (
         main_category:restaurant_main_category ( id, name )
-      )
+      ),
+      reviews ( id, review_info, rating )
     `)
     .eq("id", id)
     .single();
 
   if (error) throw error;
-
   if (!data) return null;
+
+  const reviews = data.reviews ?? [];
+  const ratings = reviews.map(rv => rv.rating).filter(r => typeof r === "number");
+  const totalReview = ratings.length;
+  const avgRating =
+    totalReview > 0
+      ? ratings.reduce((sum, val) => sum + val, 0) / totalReview
+      : null;
 
   const restaurant = {
     id: data.id,
@@ -95,11 +115,75 @@ export const getRestaurantById = async (id) => {
     })),
     food_categories: (data.restaurant_food_category_map ?? []).map(fc => fc.food_category),
     event_categories: (data.restaurant_event_category_map ?? []).map(ec => ec.event_category),
-    main_categories: (data.restaurant_main_category_map ?? []).map(mc => mc.main_category)
+    main_categories: (data.restaurant_main_category_map ?? []).map(mc => mc.main_category),
+    reviews,
+    avgRating,
+    totalReview,
   };
 
   return restaurant;
 };
+
+export const getTopRestaurants = async (limit = 5) => {
+  const { data, error } = await supabase
+    .from("restaurants")
+    .select(`
+      id, name, description,
+      restaurants_images ( id, url, filename ),
+      restaurant_food_category_map (
+        food_category:restaurant_food_categories ( id, name )
+      ),
+      restaurant_event_category_map (
+        event_category:restaurant_event_categories ( id, name )
+      ),
+      restaurant_main_category_map (
+        main_category:restaurant_main_category ( id, name )
+      ),
+      reviews ( id, review_info, rating )
+    `);
+
+  if (error) throw new Error(error.message);
+
+  const restaurants = (data ?? []).map(r => {
+    const reviews = r.reviews ?? [];
+    const ratings = reviews.map(rv => rv.rating).filter(r => typeof r === "number");
+    const totalReview = ratings.length;
+    const avgRating =
+      totalReview > 0
+        ? ratings.reduce((sum, val) => sum + val, 0) / totalReview
+        : null;
+
+    return {
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      images: (r.restaurants_images ?? []).map(img => ({
+        id: img.id,
+        url: img.url,
+        filename: img.filename,
+      })),
+      food_categories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
+      event_categories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
+      main_categories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category),
+      reviews,
+      avgRating,
+      totalReview,
+    };
+  });
+
+  const ranked = restaurants
+    .filter(r => r.avgRating !== null)
+    .sort((a, b) => {
+      if (b.avgRating === a.avgRating) {
+        return b.totalReview - a.totalReview;
+      }
+      return b.avgRating - a.avgRating;
+    })
+    .slice(0, limit);
+
+  return ranked;
+};
+
 
 export const updateRestaurant = async (id, updates) => {
   const { data, error } = await supabase
@@ -152,7 +236,8 @@ export const searchRestaurants = async (query, filters = {}, page = 1, limit = 1
         ),
         restaurant_event_category_map (
           event_category:restaurant_event_categories ( id, name )
-        )
+        ),
+        reviews ( id, review_info, rating )
       `, { count: "exact" })
       .or(`name.ilike.%${query}%,description.ilike.%${query}%`);
 
@@ -206,20 +291,33 @@ export const searchRestaurants = async (query, filters = {}, page = 1, limit = 1
     const { data, error, count } = await baseBuilder.range(from, to);
     if (error) throw new Error(error.message);
 
-    // --- Normalize result ---
-    const restaurants = (data ?? []).map(r => ({
-      id: r.id,
-      name: r.name,
-      description: r.description,
-      images: (r.restaurants_images ?? []).map(img => ({
-        id: img.id,
-        url: img.url,
-        filename: img.filename,
-      })),
-      food_categories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
-      event_categories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
-      main_categories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category),
-    }));
+    // --- Normalize result with reviews ---
+    const restaurants = (data ?? []).map(r => {
+      const reviews = r.reviews ?? [];
+      const ratings = reviews.map(rv => rv.rating).filter(r => typeof r === "number");
+      const totalReview = ratings.length;
+      const avgRating =
+        totalReview > 0
+          ? ratings.reduce((sum, val) => sum + val, 0) / totalReview
+          : null;
+
+      return {
+        id: r.id,
+        name: r.name,
+        description: r.description,
+        images: (r.restaurants_images ?? []).map(img => ({
+          id: img.id,
+          url: img.url,
+          filename: img.filename,
+        })),
+        food_categories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
+        event_categories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
+        main_categories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category),
+        reviews,
+        avgRating,
+        totalReview,
+      };
+    });
 
     return {
       data: restaurants,
