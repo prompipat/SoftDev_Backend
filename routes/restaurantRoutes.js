@@ -6,7 +6,8 @@ import {
   fetchRestaurantById,
   modifyRestaurant,
   removeRestaurant,
-  findRestaurants
+  findRestaurants,
+  fetchTopRestaurants
 } from "../controllers/restaurantController.js";
 
 const router = express.Router();
@@ -163,6 +164,34 @@ const router = express.Router();
  */
 router.post("/restaurants", authMiddleware, addRestaurant);
 router.get("/restaurants", fetchRestaurants);
+
+/**
+ * @swagger
+ * /api/restaurants/top:
+ *   get:
+ *     summary: Get top restaurants ranked by average rating
+ *     tags: [Restaurants]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 5
+ *         required: false
+ *         description: Number of top restaurants to return
+ *     responses:
+ *       200:
+ *         description: List of top restaurants by rating
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Restaurant'
+ *       500:
+ *         description: Server error
+ */
+router.get("/restaurants/top", fetchTopRestaurants);
 
 /**
  * @swagger
