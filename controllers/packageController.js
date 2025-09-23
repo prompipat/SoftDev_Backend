@@ -4,6 +4,7 @@ import {
   getPackageById,
   updatePackage,
   deletePackage,
+  getPackagesByCategory
 } from "../services/packageService.js";
 
 export const addPackage = async (req, res) => {
@@ -35,6 +36,16 @@ export const fetchPackageById = async (req, res) => {
     res.status(200).json(packageData);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const fetchPackagesByCategory = async (req, res) => {
+  try {
+    const { category_id } = req.params;
+    const packages = await getPackagesByCategory(category_id);
+    res.json(packages);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 

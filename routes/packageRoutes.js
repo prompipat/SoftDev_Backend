@@ -6,6 +6,7 @@ import {
   fetchPackageById,
   modifyPackage,
   removePackage,
+  fetchPackagesByCategory
 } from "../controllers/packageController.js";
 
 const router = express.Router();
@@ -174,6 +175,36 @@ const router = express.Router();
  */
 router.post("/packages", addPackage);
 router.get("/packages", fetchPackages);
+
+/**
+ * @swagger
+ * /api/packages/category/{category_id}:
+ *   get:
+ *     summary: Get packages by category ID
+ *     tags: [Packages]
+ *     parameters:
+ *       - in: path
+ *         name: category_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the package category
+ *     responses:
+ *       200:
+ *         description: List of packages in the given category
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/PackageResponseDto'
+ *       404:
+ *         description: No packages found for the given category
+ *       500:
+ *         description: Server error
+ */
+router.get("/packages/category/:category_id", fetchPackagesByCategory);
+
 
 /**
  * @swagger
