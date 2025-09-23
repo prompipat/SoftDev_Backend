@@ -27,7 +27,8 @@ export const getPackages = async () => {
     .from("packages")
     .select(`
       *,
-      package_details ( id, name, price, description )
+      package_details ( id, name, price, description ),
+      package_categories ( id, name )
     `);
 
   if (error) throw new Error(error.message);
@@ -55,7 +56,8 @@ export const getPackageById = async (id) => {
     .from("packages")
     .select(`
       *,
-      package_details ( id, name, price, description )
+      package_details ( id, name, price, description ),
+      package_categories ( id, name )
     `)
     .eq("id", id)
     .maybeSingle();
