@@ -67,6 +67,21 @@ const router = express.Router();
  *                 type: string
  *               name:
  *                 type: string
+ *         reviews:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               rating:
+ *                 type: float
+ *               review_info:
+ *                 type: string
+ *         totalReview:
+ *           type: integer
+ *         avgRating:
+ *           type: float
  *       example:
  *         id: "123e4567-e89b-12d3-a456-426614174000"
  *         name: Tasty Corner
@@ -78,6 +93,9 @@ const router = express.Router();
  *         main_categories: [{ id: "1", name: "Snack Box" }]
  *         food_categories: [{ id: "2", name: "Dessert" }]
  *         event_categories: [{ id: "3", name: "Party Event" }]
+ *         reviews: [{ id: "64d3cbca-02c3-44f3-82e0-bcd1c273ab18", rating: 3.5, review_info: "Well" }]
+ *         totalReview: 1
+ *         avgRating: 3.5
  *     CreateRestaurant:
  *       type: object
  *       required:

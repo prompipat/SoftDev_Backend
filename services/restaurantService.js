@@ -37,26 +37,38 @@ export const getRestaurants = async (page = 1, limit = 10) => {
       ),
       restaurant_main_category_map (
         main_category:restaurant_main_category ( id, name )
-      )
+      ),
+      reviews (id, review_info, rating)
     `)
     .range(from, to);
 
   if (error) throw error;
 
-  // Normalize results
-  const restaurants = (data ?? []).map(r => ({
-    id: r.id,
-    name: r.name,
-    description: r.description,
-    images: (r.restaurants_images ?? []).map(img => ({
-      id: img.id,
-      url: img.url,
-      filename: img.filename
-    })),
-    food_categories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
-    event_categories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
-    main_categories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category)
-  }));
+  const restaurants = (data ?? []).map(r => {
+    const reviews = r.reviews;
+    const ratings = reviews.map(rv => rv.rating).filter(r => typeof r === "number");
+    const totalReview = ratings.length;
+    const avgRating = totalReview > 0
+      ? ratings.reduce((sum, val) => sum + val, 0) / totalReview
+      : null;
+
+    return {
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      images: (r.restaurants_images ?? []).map(img => ({
+        id: img.id,
+        url: img.url,
+        filename: img.filename
+      })),
+      foodCategories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
+      eventCategories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
+      mainCategories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category),
+      avgRating,
+      reviews,
+      totalReview
+    };
+  });
 
   return restaurants;
 };
