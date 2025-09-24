@@ -6,16 +6,62 @@ import {
   fetchPackageById,
   modifyPackage,
   removePackage,
+  fetchPackagesByCategory
 } from "../controllers/packageController.js";
 
 const router = express.Router();
-
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     Package:
+ *     PackageDetailDto:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Name of the package detail
+ *         description:
+ *           type: string
+ *           description: Description of the package detail
+ *         old_price:
+ *           type: number
+ *           format: float
+ *           description: Original price before discount
+ *         price:
+ *           type: number
+ *           format: float
+ *           description: Current price (after discount if applicable)
+ *         has_discount:
+ *           type: boolean
+ *           description: Whether the item has a discount applied
+ *
+ *     PackageDetailResponse:
+ *       allOf:
+ *         - $ref: '#/components/schemas/PackageDetailDto'
+ *         - type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               description: Auto-generated ID of the package detail
+ *
+ *     PackageCategoryDto:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Name of the package category
+ *
+ *     PackageCategoryResponse:
+ *       allOf:
+ *         - $ref: '#/components/schemas/PackageCategoryDto'
+ *         - type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               description: ID of the package category
+ *
+ *     CreatePackageDto:
  *       type: object
  *       required:
  *         - restaurant_id
@@ -23,9 +69,6 @@ const router = express.Router();
  *         - description
  *         - category_id
  *       properties:
- *         id:
- *           type: string
- *           description: Auto-generated ID of the package
  *         restaurant_id:
  *           type: string
  *           description: ID of the restaurant this package belongs to
@@ -41,7 +84,7 @@ const router = express.Router();
  *         discount:
  *           type: number
  *           format: float
- *           description: Discount on the package
+ *           description: Discount on the package (percentage)
  *         start_discount_date:
  *           type: string
  *           format: date
@@ -50,14 +93,40 @@ const router = express.Router();
  *           type: string
  *           format: date
  *           description: End date of the discount
+ *
+ *     PackageResponseDto:
+ *       allOf:
+ *         - $ref: '#/components/schemas/CreatePackageDto'
+ *         - type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               description: Auto-generated ID of the package
+ *             package_details:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/PackageDetailResponse'
+ *             package_categories:
+ *               $ref: '#/components/schemas/PackageCategoryResponse'
  *       example:
- *         restaurant_id: "2b0c14bd-7bbd-431a-9282-5abe5d461f80"
+ *         id: "72f1ea02-1f8b-471b-b7bf-c29e3f003db0"
+ *         restaurant_id: "dc930b4f-dfef-47f5-99ca-75a7983975a3"
  *         name: "Family Feast"
  *         description: "A full meal package for a family of four."
- *         category_id: "123e4567-e89b-12d3-a456-426614174000"
- *         discount: null
- *         start_discount_date: null
- *         end_discount_date: null
+ *         category_id: "9e42e7eb-4402-475f-81c2-7d1dba0cbc52"
+ *         discount: 10
+ *         start_discount_date: "2023-10-01"
+ *         end_discount_date: "2023-10-31"
+ *         package_details:
+ *           - id: "0979bdaf-303c-443c-b62a-ab2856cabd8d"
+ *             name: "Family 2 Standard Buffet 10 เนื้อ"
+ *             description: "บุฟเฟ่ต์มาตรฐานสำหรับ 10 ท่าน พร้อมเนื้อคุณภาพดี"
+ *             old_price: 300
+ *             price: 270
+ *             has_discount: true
+ *         package_categories:
+ *           id: "9e42e7eb-4402-475f-81c2-7d1dba0cbc52"
+ *           name: "ท้องแตก"
  */
 
 /**
@@ -78,14 +147,14 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Package'
+ *             $ref: '#/components/schemas/CreatePackageDto'
  *     responses:
  *       201:
  *         description: Package created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Package'
+ *               $ref: '#/components/schemas/PackageResponseDto'
  *       400:
  *         description: Invalid input
  *
@@ -100,12 +169,48 @@ const router = express.Router();
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Package'
+ *                 $ref: '#/components/schemas/PackageResponseDto'
  *       500:
  *         description: Server error
  */
 router.post("/packages", addPackage);
 router.get("/packages", fetchPackages);
+
+/**
+ * @swagger
+ * /api/packages/category/{category_id}/{restaurant_id}:
+ *   get:
+ *     summary: Get packages by category ID and restaurant ID
+ *     tags: [Packages]
+ *     parameters:
+ *       - in: path
+ *         name: category_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the package category
+ *       - in: path
+ *         name: restaurant_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the restaurant to filter packages
+ *     responses:
+ *       200:
+ *         description: List of packages in the given category and restaurant
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/PackageResponseDto'
+ *       404:
+ *         description: No packages found
+ *       500:
+ *         description: Server error
+ */
+router.get("/packages/category/:category_id/:restaurant_id", fetchPackagesByCategory);
+
 
 /**
  * @swagger
@@ -126,7 +231,7 @@ router.get("/packages", fetchPackages);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Package'
+ *               $ref: '#/components/schemas/PackageResponseDto'
  *       404:
  *         description: Package not found
  *
@@ -145,10 +250,14 @@ router.get("/packages", fetchPackages);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Package'
+ *             $ref: '#/components/schemas/CreatePackageDto'
  *     responses:
  *       200:
  *         description: Package updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PackageResponseDto'
  *       400:
  *         description: Invalid input
  *       404:
@@ -177,6 +286,5 @@ router.get("/packages", fetchPackages);
 router.get("/packages/:id", fetchPackageById);
 router.put("/packages/:id", modifyPackage);
 router.delete("/packages/:id", removePackage);
-
 
 export default router;

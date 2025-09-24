@@ -27,7 +27,8 @@ export const getPackages = async () => {
     .from("packages")
     .select(`
       *,
-      package_details ( id, name, price, description )
+      package_details ( id, name, price, description ),
+      package_categories ( id, name )
     `);
 
   if (error) throw new Error(error.message);
@@ -55,7 +56,8 @@ export const getPackageById = async (id) => {
     .from("packages")
     .select(`
       *,
-      package_details ( id, name, price, description )
+      package_details ( id, name, price, description ),
+      package_categories ( id, name )
     `)
     .eq("id", id)
     .maybeSingle();
@@ -78,6 +80,37 @@ export const getPackageById = async (id) => {
       has_discount: hasDiscount
     }))
   };
+};
+
+export const getPackagesByCategory = async (categoryId, restaurantId) => {
+  const { data, error } = await supabase
+    .from("packages")
+    .select(`
+      *,
+      package_details ( id, name, price, description ),
+      package_categories ( id, name )
+    `)
+    .eq("category_id", categoryId)
+    .eq("restaurant_id", restaurantId);
+
+  if (error) throw new Error(error.message);
+
+  return data.map(pkg => {
+    const hasDiscount = pkg.discount && pkg.discount > 0;
+    return {
+      ...pkg,
+      package_details: (pkg.package_details ?? []).map(detail => ({
+        id: detail.id,
+        name: detail.name,
+        description: detail.description,
+        old_price: hasDiscount ? detail.price : null,
+        price: hasDiscount
+          ? detail.price - (detail.price * (pkg.discount / 100))
+          : detail.price,
+        has_discount: hasDiscount
+      }))
+    };
+  });
 };
 
 export const updatePackage = async (id, updates) => {
