@@ -12,6 +12,11 @@ export const addBlog = async (req, res) => {
     const userId = req.user.userData.id;
     
     blogData.user_id = userId;
+    // Set timestamp to current time in Thailand timezone
+    const now = new Date();
+    const thailandOffset = 7 * 60; // minutes offset
+    const localTime = new Date(now.getTime() + thailandOffset * 60 * 1000);
+    blogData.timestamp = localTime.toISOString();
 
     const newBlog = await createBlog(blogData);
     res.status(201).json(newBlog);

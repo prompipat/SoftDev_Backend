@@ -38,6 +38,7 @@ const router = express.Router();
  *         email: "johndoe@email.com"
  *         role: "customer"
  *         profile_picture: "https://example.com/profile.jpg"
+ *    
  * 
  *     Blog:
  *       type: object
@@ -45,6 +46,8 @@ const router = express.Router();
  *         - timestamp
  *         - title
  *         - detail
+ *         - restaurant_event_categories
+ *         - restaurant_main_category
  *       properties:
  *         id:
  *           type: string
@@ -59,6 +62,12 @@ const router = express.Router();
  *         detail:
  *           type: string
  *           description: Detail of the blog
+ *         restaurant_event_categories:
+ *           type: string
+ *           description: ID of the associated restaurant event category
+ *         restaurant_main_category:
+ *           type: string
+ *           description: ID of the associated restaurant main category
  *         user_id:
  *           type: string
  *           description: ID of the user who created the blog
@@ -70,6 +79,8 @@ const router = express.Router();
  *         timestamp: "2025-12-25T18:30:00Z"
  *         title: "ร้านนี้อร่อยมาก123"
  *         detail: "ร้านนี้มีอาหารหลากหลายและรสชาติดีมากๆ แนะนำให้ลอง!"
+ *         restaurant_event_categories: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+ *         restaurant_main_category: "c290f1ee-6c54-4b01-90e6-d701748f0852"
  *         user_id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
  *         user:
  *           id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
@@ -138,6 +149,8 @@ const router = express.Router();
  *               - timestamp
  *               - title
  *               - detail
+ *               - restaurant_event_categories
+ *               - restaurant_main_category
  *             properties:
  *               timestamp:
  *                 type: string
@@ -146,6 +159,18 @@ const router = express.Router();
  *                 type: string
  *               detail:
  *                 type: string
+ *               restaurant_event_categories:
+ *                 type: string
+ *                 description: ID of the associated restaurant event category
+ *               restaurant_main_category:
+ *                 type: string
+ *                 description: ID of the associated restaurant main category
+ *             example:
+ *               title: "ร้านนี้อร่อยมาก123"
+ *               detail: "ร้านนี้มีอาหารหลากหลายและรสชาติดีมากๆ แนะนำให้ลอง!"
+ *               restaurant_event_categories: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+ *               restaurant_main_category: "c290f1ee-6c54-4b01-90e6-d701748f0852"
+ * 
  *     responses:
  *       201:
  *         description: Blog created successfully
@@ -207,6 +232,8 @@ const router = express.Router();
  *                      title: "ร้านนี้อร่อยมาก123"
  *                      detail: "ร้านนี้มีอาหารหลากหลายและรสชาติดีมากๆ แนะนำให้ลอง!"
  *                      user_id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
+ *                      restaurant_event_categories: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+ *                      restaurant_main_category: "c290f1ee-6c54-4b01-90e6-d701748f0852"
  *                      user:
  *                        id: "93a302ba-22bd-4d19-9d72-1a4831a1aaf1"
  *                        name: "John Doe"
@@ -300,6 +327,15 @@ router.get("/blogs", fetchBlogs);
  *                 type: string
  *               detail:
  *                 type: string
+ *               restaurant_event_categories:
+ *                 type: string
+ *               restaurant_main_category:
+ *                 type: string
+ *             example:
+ *               title: "ร้านนี้อร่อยมาก123"
+ *               detail: "ร้านนี้มีอาหารหลากหลายและรสชาติดีมากๆ แนะนำให้ลอง!"
+ *               restaurant_event_categories: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+ *               restaurant_main_category: "c290f1ee-6c54-4b01-90e6-d701748f0852"
  *     responses:
  *       200:
  *         description: Updated blog details
