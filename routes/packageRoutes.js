@@ -178,9 +178,9 @@ router.get("/packages", fetchPackages);
 
 /**
  * @swagger
- * /api/packages/category/{category_id}:
+ * /api/packages/category/{category_id}/{restaurant_id}:
  *   get:
- *     summary: Get packages by category ID
+ *     summary: Get packages by category ID and restaurant ID
  *     tags: [Packages]
  *     parameters:
  *       - in: path
@@ -189,9 +189,15 @@ router.get("/packages", fetchPackages);
  *           type: string
  *         required: true
  *         description: ID of the package category
+ *       - in: path
+ *         name: restaurant_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the restaurant to filter packages
  *     responses:
  *       200:
- *         description: List of packages in the given category
+ *         description: List of packages in the given category and restaurant
  *         content:
  *           application/json:
  *             schema:
@@ -199,11 +205,11 @@ router.get("/packages", fetchPackages);
  *               items:
  *                 $ref: '#/components/schemas/PackageResponseDto'
  *       404:
- *         description: No packages found for the given category
+ *         description: No packages found
  *       500:
  *         description: Server error
  */
-router.get("/packages/category/:category_id", fetchPackagesByCategory);
+router.get("/packages/category/:category_id/:restaurant_id", fetchPackagesByCategory);
 
 
 /**

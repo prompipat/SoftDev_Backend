@@ -82,7 +82,7 @@ export const getPackageById = async (id) => {
   };
 };
 
-export const getPackagesByCategory = async (categoryId) => {
+export const getPackagesByCategory = async (categoryId, restaurantId) => {
   const { data, error } = await supabase
     .from("packages")
     .select(`
@@ -90,7 +90,8 @@ export const getPackagesByCategory = async (categoryId) => {
       package_details ( id, name, price, description ),
       package_categories ( id, name )
     `)
-    .eq("category_id", categoryId);
+    .eq("category_id", categoryId)
+    .eq("restaurant_id", restaurantId);
 
   if (error) throw new Error(error.message);
 

@@ -41,8 +41,8 @@ export const fetchPackageById = async (req, res) => {
 
 export const fetchPackagesByCategory = async (req, res) => {
   try {
-    const { category_id } = req.params;
-    const packages = await getPackagesByCategory(category_id);
+    const { category_id, restaurant_id } = req.params;
+    const packages = await getPackagesByCategory(category_id, restaurant_id);
     res.json(packages);
   } catch (err) {
     res.status(500).json({ error: err.message });
