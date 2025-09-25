@@ -1,31 +1,57 @@
 import supabase from "../config/supabaseClient.js";
 
+
 export const createOrder = async (orderData) => {
+  try {
+    // 1. Fetch package detail (base price + package info)
+    const { data: packageDetail, error: detailError } = await supabase
+      .from("package_details")
+      .select(`
+        id,
+        price,
+        package:package_id (
+          id,
+          discount,
+          start_discount_date,
+          end_discount_date
+        )
+      `)
+      .eq("id", orderData.package_detail_id)
+      .single();
 
-  const { data: packageDetail, error: packageError } = await supabase
-    .from("package_details")
-    .select("price")
-    .eq("id", orderData.package_detail_id)
-    .single();
+    if (detailError) throw new Error(detailError.message);
+    if (!packageDetail) throw new Error("Package detail not found");
 
-  if (packageError) throw new Error(packageError.message);
-  if (!packageDetail) throw new Error("Package detail not found");
+    let finalUnitPrice = packageDetail.price;
 
   
-  orderData.status = orderData.status || 'pending';
-  orderData.unit_price = packageDetail.price;
-  orderData.total_price = orderData.unit_price * orderData.participants;
+   
+    
+    // 2. apply discount
+    const pkg = packageDetail.package;
+    finalUnitPrice =  finalUnitPrice - (finalUnitPrice * pkg.discount) / 100;
+      
 
+    // 3. Assign calculated values
+    orderData.unit_price = finalUnitPrice;
+    orderData.total_price = finalUnitPrice * orderData.participants;
+    orderData.status = orderData.status || "pending";
 
+    // 4. Insert order
+    const { data, error } = await supabase
+      .from("orders")
+      .insert([orderData])
+      .select()
+      .single();
 
-  const { data, error } = await supabase
-    .from("orders")
-    .insert([orderData])
-    .select();
-
-  if (error) throw new Error(error.message);
-  return data;
+    if (error) throw new Error(error.message);
+    return data;
+  } catch (err) {
+    throw new Error(err.message);
+  }
 };
+
+
 
 export const getOrder = async () => {
   const { data, error } = await supabase.from("orders").select("*");
