@@ -3,7 +3,9 @@ import {
   getOrder,
   getOrderById,
   updateOrder,
-  deleteOrder
+  deleteOrder,
+  updateOrderStatus,
+  getOrdersByUserId
 } from "../services/orderService.js";
 
 export const addOrder = async (req, res) => {
@@ -103,9 +105,14 @@ export const modifyOrderStatus = async (req, res) => {
 export const fetchMyOrders = async (req, res) => {
   try {
     const userId = req.user.userData.id;
+
+    const orders = await getOrdersByUserId(userId);
+
+
     const status = req.query.status || "all"; // default all
 
     const orders = await getOrdersByUserId(userId, status);
+
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json({ error: error.message });
