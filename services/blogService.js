@@ -8,7 +8,9 @@ export const createBlog = async (blogData) => {
         timestamp: blogData.timestamp,
         title: blogData.title,
         detail: blogData.detail,
-        user_id: blogData.user_id
+        user_id: blogData.user_id,
+        restaurant_event_categories: blogData.restaurant_event_categories,
+        restaurant_main_category: blogData.restaurant_main_category
       }
     ])
     .select("*, user:user_id(*)");
