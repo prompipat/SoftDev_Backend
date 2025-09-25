@@ -148,3 +148,38 @@ export const findPackageByName = async (restaurantId, name) => {
   if (error) throw new Error(error.message);
   return data;
 };
+
+
+export const getTopPromotions = async () => {
+  const { data, error } = await supabase
+    .from("packages")
+    .select(`
+      id,
+      name,
+      description,
+      discount,
+      start_discount_date,
+      end_discount_date,
+      package_images (
+        id,
+        url,
+        package_id
+      )
+    `)
+    .gt("discount", 0) // must have discount > 0
+    .order("discount", { ascending: false })
+    .limit(5);
+
+  if (error) throw new Error(error.message);
+
+
+  return (data ?? []).map(pkg => ({
+    id: pkg.id,
+    name: pkg.name,
+    description: pkg.description,
+    discount: pkg.discount,
+    start_discount_date: pkg.start_discount_date,
+    end_discount_date: pkg.end_discount_date,
+    images: pkg.package_images ?? []
+  }));
+};

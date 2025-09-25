@@ -115,6 +115,17 @@ export const getOrdersByUserId = async (userId) => {
     .select("*")
     .eq("user_id", userId);
 
+
+export const getOrdersByUserId = async (userId, status = "all") => {
+  let query = supabase.from("orders").select("*").eq("user_id", userId);
+
+  // Apply status filter if not "all"
+  if (status && status !== "all") {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
+
   if (error) throw new Error(error.message);
   return data;
 };

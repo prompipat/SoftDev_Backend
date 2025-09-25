@@ -6,7 +6,8 @@ import {
   fetchPackageById,
   modifyPackage,
   removePackage,
-  fetchPackagesByCategory
+  fetchPackagesByCategory,
+  fetchTopPromotions,
 } from "../controllers/packageController.js";
 
 const router = express.Router();
@@ -283,6 +284,54 @@ router.get("/packages/category/:category_id/:restaurant_id", fetchPackagesByCate
  *       500:
  *         description: Server error
  */
+
+/**
+ * @swagger
+ * /api/packages/promotions/top:
+ *   get:
+ *     summary: Get top 5 packages with the highest discount (including images)
+ *     tags: [Packages]
+ *     responses:
+ *       200:
+ *         description: List of top 5 promotional packages with images
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                   price:
+ *                     type: number
+ *                   discount:
+ *                     type: number
+ *                   start_discount_date:
+ *                     type: string
+ *                     format: date
+ *                   end_discount_date:
+ *                     type: string
+ *                     format: date
+ *                   images:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         url:
+ *                           type: string
+ *                         filename:
+ *                           type: string
+ *       500:
+ *         description: Server error
+ */
+router.get("/packages/promotions/top", fetchTopPromotions);
 router.get("/packages/:id", fetchPackageById);
 router.put("/packages/:id", modifyPackage);
 router.delete("/packages/:id", removePackage);
