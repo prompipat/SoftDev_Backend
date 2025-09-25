@@ -8,8 +8,14 @@ import {
 
 export const addPackageImage = async (req, res) => {
   try {
-    const packageImageData = req.body;
-    const newImage = await createPackageImage(packageImageData);
+    const { package_id } = req.body;
+    const file = req.file;
+
+    if (!package_id) {
+      return res.status(400).json({ error: "package_id is required" });
+    }
+
+    const newImage = await createPackageImage(file, package_id);
     res.status(201).json(newImage);
   } catch (error) {
     res.status(400).json({ error: error.message });

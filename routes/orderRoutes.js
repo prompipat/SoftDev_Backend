@@ -176,8 +176,81 @@ router.get("/orders", fetchOrders);
  *       500:
  *         description: Server error
  */
-router.get("/orders/:id", authMiddleware ,fetchOrderById);
-router.put("/orders/:id",authMiddleware, modifyOrder);
-router.delete("/orders/:id", authMiddleware,removeOrder);
+
+/**
+ * @swagger
+ * /api/orders/{id}/status:
+ *   put:
+ *     summary: Update only the order status
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the order
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [pending, waiting for payment, cancel, preparing, finished]
+ *             example:
+ *               status: "waiting for payment"
+ *     responses:
+ *       200:
+ *         description: Order status updated successfully
+ *       400:
+ *         description: Invalid status or input
+ *       404:
+ *         description: Order not found
+ */
+
+
+/**
+ * @swagger
+ * /api/orders/me:
+ *   get:
+ *     summary: Get all orders for the authenticated user with optional status filter
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [all, pending, waiting for payment, cancel, preparing, finished]
+ *           default: all
+ *         description: Filter orders by status (default = all)
+ *     responses:
+ *       200:
+ *         description: List of user's orders
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Order'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+
+router.get("/orders/me", authMiddleware, fetchMyOrders);
+router.get("/orders/:id", authMiddleware, fetchOrderById);
+router.put("/orders/:id", authMiddleware, modifyOrder);
+router.delete("/orders/:id", authMiddleware, removeOrder);
+router.put("/orders/:id/status", authMiddleware, modifyOrderStatus);
 
 export default router;

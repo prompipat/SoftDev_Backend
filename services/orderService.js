@@ -52,3 +52,29 @@ export const deleteOrder = async (id) => {
   return { success: true, message: "Order deleted successfully" };
 };
 
+
+
+export const updateOrderStatus = async (id, updates) => {
+  const { data, error } = await supabase
+    .from("orders")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+export const getOrdersByUserId = async (userId, status = "all") => {
+  let query = supabase.from("orders").select("*").eq("user_id", userId);
+
+  // Apply status filter if not "all"
+  if (status && status !== "all") {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return data;
+};

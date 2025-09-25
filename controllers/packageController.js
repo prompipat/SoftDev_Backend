@@ -4,7 +4,8 @@ import {
   getPackageById,
   updatePackage,
   deletePackage,
-  getPackagesByCategory
+  getPackagesByCategory,
+  getTopPromotions
 } from "../services/packageService.js";
 
 export const addPackage = async (req, res) => {
@@ -68,6 +69,16 @@ export const removePackage = async (req, res) => {
     const { id } = req.params;
     const result = await deletePackage(id);
     res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+export const fetchTopPromotions = async (req, res) => {
+  try {
+    const promotions = await getTopPromotions();
+    res.status(200).json(promotions);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

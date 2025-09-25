@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import {
   addPackageImage,
   fetchPackageImages,
@@ -8,7 +9,7 @@ import {
 } from "../controllers/packageImageController.js";
 
 const router = express.Router();
-
+const upload = multer();
 /**
  * @swagger
  * components:
@@ -39,37 +40,30 @@ const router = express.Router();
  *   post:
  *     summary: Upload a new package image
  *     tags: [PackageImages]
+ *     consumes:
+ *       - multipart/form-data
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/PackageImage'
+ *             type: object
+ *             required:
+ *               - package_id
+ *               - file
+ *             properties:
+ *               package_id:
+ *                 type: string
+ *                 description: ID of the package this image belongs to
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image file to upload
  *     responses:
  *       201:
- *         description: Package image created successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PackageImage'
- *       400:
- *         description: Invalid input
- *   get:
- *     summary: Get all package images
- *     tags: [PackageImages]
- *     responses:
- *       200:
- *         description: List of all package images
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/PackageImage'
- *       500:
- *         description: Server error
+ *         description: Package image uploaded successfully
  */
-router.post("/package-images", addPackageImage);
+router.post("/package-images", upload.single("file"), addPackageImage);
 router.get("/package-images", fetchPackageImages);
 
 /**

@@ -1,12 +1,34 @@
 import supabase from "../config/supabaseClient.js";
+import { v4 as uuidv4 } from "uuid";
 
-export const createPackageImage = async (packageImageData) => {
+export const createPackageImage = async (file, package_id) => {
+  if (!file) throw new Error("No file uploaded");
+
+  const filename = `package/${uuidv4()}-${file.originalname}`;
+
+
+  const { error: uploadError } = await supabase.storage
+    .from("images") // bucket name
+    .upload(filename, file.buffer, {
+      contentType: file.mimetype,
+      upsert: false,
+    });
+
+  if (uploadError) throw new Error(uploadError.message);
+
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("images").getPublicUrl(filename);
+
+
   const { data, error } = await supabase
     .from("package_images")
     .insert([
       {
-        url: packageImageData.url,
-        package_id: packageImageData.package_id,
+        url: publicUrl,
+        filename: filename,
+        package_id,
       },
     ])
     .select()

@@ -65,3 +65,49 @@ export const removeOrder = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+const VALID_STATUSES = [
+  "pending",
+  "waiting for payment",
+  "cancel",
+  "preparing",
+  "finished"
+];
+
+export const modifyOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ error: "Status is required" });
+    }
+
+    if (!VALID_STATUSES.includes(status)) {
+      return res.status(400).json({
+        error: `Invalid status. Allowed values: ${VALID_STATUSES.join(", ")}`
+      });
+    }
+
+    const updatedOrder = await updateOrderStatus(id, { status });
+    if (!updatedOrder) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const fetchMyOrders = async (req, res) => {
+  try {
+    const userId = req.user.userData.id;
+    const status = req.query.status || "all"; // default all
+
+    const orders = await getOrdersByUserId(userId, status);
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
