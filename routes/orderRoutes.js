@@ -5,9 +5,7 @@ import {
   fetchOrders,
   fetchOrderById,
   modifyOrder,
-  removeOrder,
-  modifyOrderStatus,
-  fetchMyOrders
+  removeOrder
 } from "../controllers/orderController.js";
 
 const router = express.Router();
@@ -19,6 +17,7 @@ const router = express.Router();
  *     Order:
  *       type: object
  *       required:
+ *         - status
  *         - location
  *         - event_date
  *         - package_id
@@ -26,39 +25,40 @@ const router = express.Router();
  *         - start_time
  *         - end_time
  *         - package_detail_id
- *         - participants
+ * 
  *       properties:
- *         location:
+ *       status:
  *           type: string
- *           description: Location of the event
- *         package_id:
+ *           description: status of the order
+ *       location:
  *           type: string
- *           description: ID of the package
- *         restaurant_id:
- *           type: string
- *           description: ID of the restaurant that will fulfill the order
- *         start_time:
- *           type: string
+ *           description: location of the event
+ *       package_id:
+ *           type: foreign key
+ *           description: id of the package
+ *       restaurant_id:
+ *           type: foreign key
+ *           description: id of the restaurant that will fulfill the order
+ *       start_time:
+ *           type: string 
  *           format: date-time
- *           description: Start time of the event
- *         end_time:
- *           type: string
- *           format: date-time
- *           description: End time of the event
- *         event_date:
- *           type: string
- *           format: date
- *           description: Date of the event
- *         message:
- *           type: string
- *           description: Additional message for the order
- *         package_detail_id:
- *           type: string
- *           description: ID of the package detail
- *         participants:
- *           type: integer
- *           description: Number of participants
+ *           description: start time of the event
+ *       end_time:
+ *          type: string
+ *          format: date-time
+ *          description: end time of the event
+ *       event_date:
+ *          type: date
+ *          format: date-time
+ *          description: date of the event
+ *       message:
+ *          type: string
+ *          description: additional message for the order
+ *       package_detail_id:
+ *          type: foreign key
+ *          description: id of the package detail
  *       example:
+ *         status: pending
  *         location: "123 ถนนพหลโยธิน แขวงลาดยาว เขตจตุจักร กรุงเทพฯ 10900"
  *         package_id: "uuid-v4-string"
  *         restaurant_id: "uuid-v4-string"
@@ -67,7 +67,6 @@ const router = express.Router();
  *         event_date: "2023-10-10"
  *         message: "กรุณาเตรียมอาหารให้ทันเวลานะครับ"
  *         package_detail_id: "uuid-v4-string"
- *         participants: 10
  */
 
 /**
@@ -76,8 +75,6 @@ const router = express.Router();
  *   post:
  *     summary: Create a new order
  *     tags: [Orders]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -104,18 +101,19 @@ const router = express.Router();
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Order'
+ *                 $ref: '#/components/schemas/order'
  *       500:
  *         description: Server error
  */
 router.post("/orders", authMiddleware, addOrder);
 router.get("/orders", fetchOrders);
 
+
 /**
  * @swagger
  * /api/orders/{id}:
  *   get:
- *     summary: Get an order by ID
+ *     summary: Get a orders by ID
  *     tags: [Orders]
  *     parameters:
  *       - in: path
@@ -126,7 +124,7 @@ router.get("/orders", fetchOrders);
  *         description: ID of the order
  *     responses:
  *       200:
- *         description: Order details
+ *         description: order details
  *         content:
  *           application/json:
  *             schema:
@@ -136,17 +134,15 @@ router.get("/orders", fetchOrders);
  *       500:
  *         description: Server error
  *   put:
- *     summary: Update an order (full update)
+ *     summary: Update a Order
  *     tags: [Orders]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: ID of the order
+ *         description: ID of the Order
  *     requestBody:
  *       required: true
  *       content:
@@ -155,7 +151,7 @@ router.get("/orders", fetchOrders);
  *             $ref: '#/components/schemas/Order'
  *     responses:
  *       200:
- *         description: Updated order details
+ *         description: Updated Order details
  *         content:
  *           application/json:
  *             schema:
@@ -165,24 +161,21 @@ router.get("/orders", fetchOrders);
  *       400:
  *         description: Invalid input
  *   delete:
- *     summary: Delete an order
+ *     summary: Delete a Order
  *     tags: [Orders]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: ID of the order
+ *         description: ID of the Order
  *     responses:
  *       200:
  *         description: Order deleted successfully
  *       500:
  *         description: Server error
  */
-
 
 /**
  * @swagger
@@ -242,75 +235,6 @@ router.get("/orders", fetchOrders);
  *     responses:
  *       200:
  *         description: List of user's orders
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Order'
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Server error
- */
-
-router.get("/orders/me", authMiddleware, fetchMyOrders);
-router.get("/orders/:id", authMiddleware, fetchOrderById);
-router.put("/orders/:id", authMiddleware, modifyOrder);
-router.delete("/orders/:id", authMiddleware, removeOrder);
-router.put("/orders/:id/status", authMiddleware, modifyOrderStatus);
-
-
-/**
- * @swagger
- * /api/orders/{id}/status:
- *   put:
- *     summary: Update only the order status
- *     tags: [Orders]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: ID of the order
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - status
- *             properties:
- *               status:
- *                 type: string
- *                 enum: [pending, waiting for payment, cancel, preparing, finished]
- *             example:
- *               status: "waiting for payment"
- *     responses:
- *       200:
- *         description: Order status updated successfully
- *       400:
- *         description: Invalid status or input
- *       404:
- *         description: Order not found
- */
-
-
-/**
- * @swagger
- * /api/orders/me:
- *   get:
- *     summary: Get all orders for the authenticated user
- *     tags: [Orders]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of the user's orders
  *         content:
  *           application/json:
  *             schema:
