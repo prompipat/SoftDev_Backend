@@ -59,7 +59,18 @@ export const deletePackageCategory = async (id) => {
 export const getPackageCategoriesByRestaurant = async (restaurantId) => {
   const { data, error } = await supabase
     .from("package_categories")
-    .select("*")
+    .select(`
+      id,
+      name,
+      packages (
+        id,
+        name,
+        description,
+        discount,
+        start_discount_date,
+        end_discount_date
+      )
+    `)
     .eq("restaurant_id", restaurantId);
 
   if (error) throw new Error(error.message);

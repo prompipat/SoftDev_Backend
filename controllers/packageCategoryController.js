@@ -68,9 +68,11 @@ export const fetchPackageCategoriesByRestaurant = async (req, res) => {
   try {
     const { restaurant_id } = req.params;
     const categories = await getPackageCategoriesByRestaurant(restaurant_id);
+
     if (!categories || categories.length === 0) {
-      return res.status(404).json({ error: "No package categories found for this restaurant" });
+      return res.status(404).json({ error: "No categories found for this restaurant" });
     }
+
     res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ error: error.message });
