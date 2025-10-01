@@ -5,7 +5,8 @@ import {
   updateOrder,
   deleteOrder,
   updateOrderStatus,
-  getOrdersByUserId
+  getOrdersByUserId,
+  getOrdersByRestaurant
 } from "../services/orderService.js";
 
 export const addOrder = async (req, res) => {
@@ -105,7 +106,27 @@ export const modifyOrderStatus = async (req, res) => {
 export const fetchMyOrders = async (req, res) => {
   try {
     const userId = req.user.userData.id;
-    const orders = await getOrdersByUserId(userId);
+    const status = req.query.status || "all"; // default all
+
+    const orders = await getOrdersByUserId(userId, status);
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+export const fetchOrdersByRestaurant = async (req, res) => {
+  try {
+    const { restaurant_id } = req.params; // take restaurant_id directly from path
+    const { status } = req.query;
+
+    const orders = await getOrdersByRestaurant(restaurant_id, status);
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ error: "No orders found for this restaurant" });
+    }
 
     res.status(200).json(orders);
   } catch (error) {
