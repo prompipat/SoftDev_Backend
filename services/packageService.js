@@ -1,20 +1,35 @@
 import supabase from "../config/supabaseClient.js";
 
 export const createPackage = async (packageData) => {
-  const existing = await findPackageByName(packageData.restaurant_id, packageData.name);
-  if (existing) throw new Error("Package already exists for this restaurant");
+  // 1. Check if package name already exists for the same restaurant
+  const existing = await findPackageByName(packageData.name, packageData.category_id);
+  if (existing) throw new Error("Package already exists");
 
+  // 2. Lookup restaurant_id from package_categories table
+  const { data: category, error: categoryError } = await supabase
+    .from("package_categories")
+    .select("restaurant_id")
+    .eq("id", packageData.category_id)
+    .single();
+
+  if (categoryError) throw new Error(categoryError.message);
+  if (!category) throw new Error("Category not found");
+
+  // 3. Attach restaurant_id automatically
+  const insertData = {
+    restaurant_id: category.restaurant_id,  // auto from category
+    name: packageData.name,
+    description: packageData.description,
+    category_id: packageData.category_id,
+    discount: packageData.discount || null,
+    start_discount_date: packageData.start_discount_date || null,
+    end_discount_date: packageData.end_discount_date || null,
+  };
+
+  // 4. Insert into packages table
   const { data, error } = await supabase
     .from("packages")
-    .insert([{
-      restaurant_id: packageData.restaurant_id,
-      name: packageData.name,
-      description: packageData.description,
-      category_id: packageData.category_id,
-      discount: packageData.discount ?? null,
-      start_discount_date: packageData.start_discount_date ?? null,
-      end_discount_date: packageData.end_discount_date ?? null
-    }])
+    .insert([insertData])
     .select()
     .single();
 
@@ -137,18 +152,26 @@ export const deletePackage = async (id) => {
   return { success: true, message: "Package deleted successfully" };
 };
 
-export const findPackageByName = async (restaurantId, name) => {
-  const { data, error } = await supabase
+export const findPackageByName = async (name, category_id) => {
+  // get restaurant_id for that category
+  const { data: category } = await supabase
+    .from("package_categories")
+    .select("restaurant_id")
+    .eq("id", category_id)
+    .single();
+
+  if (!category) return null;
+
+  // check if package with same name exists under same restaurant
+  const { data } = await supabase
     .from("packages")
     .select("*")
-    .eq("restaurant_id", restaurantId)
     .eq("name", name)
+    .eq("restaurant_id", category.restaurant_id)
     .maybeSingle();
 
-  if (error) throw new Error(error.message);
   return data;
 };
-
 
 export const getTopPromotions = async () => {
   const { data, error } = await supabase
