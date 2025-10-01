@@ -109,11 +109,31 @@ export const updateOrderStatus = async (id, updates) => {
   return data;
 };
 
-export const getOrdersByUserId = async (userId) => {
-  const { data, error } = await supabase
+export const getOrdersByUserId = async (userId, status = "all") => {
+  let query = supabase.from("orders").select("*").eq("user_id", userId);
+
+
+  if (status && status !== "all") {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+
+export const getOrdersByRestaurant = async (restaurantId, status = "all") => {
+  let query = supabase
     .from("orders")
-    .select("*")
-    .eq("user_id", userId);
+    .select("*, users:user_id(*), packages(*), package_details(*)")
+    .eq("restaurant_id", restaurantId);
+
+  if (status !== "all") {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw new Error(error.message);
   return data;

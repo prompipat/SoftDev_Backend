@@ -151,7 +151,7 @@ const router = express.Router();
  * @swagger
  * /api/package-categories/restaurant/{restaurant_id}:
  *   get:
- *     summary: Get all package categories for a specific restaurant
+ *     summary: Get all package categories for a specific restaurant, including their packages
  *     tags: [PackageCategories]
  *     parameters:
  *       - in: path
@@ -159,22 +159,45 @@ const router = express.Router();
  *         schema:
  *           type: string
  *         required: true
- *         description: The restaurant ID
+ *         description: ID of the restaurant
  *     responses:
  *       200:
- *         description: List of package categories for the restaurant
+ *         description: List of categories with their packages
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/PackageCategory'
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   packages:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                         description:
+ *                           type: string
+ *                         discount:
+ *                           type: number
+ *                         start_discount_date:
+ *                           type: string
+ *                           format: date
+ *                         end_discount_date:
+ *                           type: string
+ *                           format: date
  *       404:
- *         description: No package categories found for this restaurant
+ *         description: No categories found
  *       500:
- *         description: Some server error
+ *         description: Server error
  */
-
 
 router.post("/package-categories", addPackageCategory);
 router.get("/package-categories", fetchPackageCategories);

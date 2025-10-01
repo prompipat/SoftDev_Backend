@@ -7,7 +7,8 @@ import {
   modifyOrder,
   removeOrder,
   modifyOrderStatus,
-  fetchMyOrders
+  fetchMyOrders,
+  fetchOrdersByRestaurant
 } from "../controllers/orderController.js";
 
 const router = express.Router();
@@ -226,13 +227,21 @@ router.get("/orders", fetchOrders);
  * @swagger
  * /api/orders/me:
  *   get:
- *     summary: Get all orders for the authenticated user
+ *     summary: Get all orders for the authenticated user with optional status filter
  *     tags: [Orders]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [all, pending, waiting for payment, cancel, preparing, finished]
+ *           default: all
+ *         description: Filter orders by status (default = all)
  *     responses:
  *       200:
- *         description: List of the user's orders
+ *         description: List of user's orders
  *         content:
  *           application/json:
  *             schema:
@@ -244,6 +253,35 @@ router.get("/orders", fetchOrders);
  *       500:
  *         description: Server error
  */
+/**
+ * @swagger
+ * /api/orders/restaurant/{restaurant_id}:
+ *   get:
+ *     summary: Get all orders for a specific restaurant
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: restaurant_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The restaurant ID
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [all, pending, waiting for payment, cancel, preparing, finished]
+ *           default: all
+ *         description: Filter orders by status
+ *     responses:
+ *       200:
+ *         description: List of orders for the restaurant
+ *       404:
+ *         description: No orders found
+ *       500:
+ *         description: Server error
+ */
+router.get("/orders/restaurant/:restaurant_id", fetchOrdersByRestaurant);
 
 router.get("/orders/me", authMiddleware, fetchMyOrders);
 router.get("/orders/:id", authMiddleware, fetchOrderById);

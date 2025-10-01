@@ -65,14 +65,14 @@ const router = express.Router();
  *     CreatePackageDto:
  *       type: object
  *       required:
- *         - restaurant_id
  *         - name
  *         - description
  *         - category_id
  *       properties:
  *         restaurant_id:
  *           type: string
- *           description: ID of the restaurant this package belongs to
+ *           readOnly: true
+ *           description: Auto-filled from the category_id (do not send when creating)
  *         name:
  *           type: string
  *           description: Name of the package
@@ -81,18 +81,21 @@ const router = express.Router();
  *           description: Detailed description of the package
  *         category_id:
  *           type: string
- *           description: ID of the package category
+ *           description: ID of the package category (used to auto-fill restaurant_id)
  *         discount:
  *           type: number
  *           format: float
- *           description: Discount on the package (percentage)
+ *           nullable: true
+ *           description: Discount on the package (percentage, optional)
  *         start_discount_date:
  *           type: string
  *           format: date
+ *           nullable: true
  *           description: Start date of the discount
  *         end_discount_date:
  *           type: string
  *           format: date
+ *           nullable: true
  *           description: End date of the discount
  *
  *     PackageResponseDto:
@@ -141,7 +144,7 @@ const router = express.Router();
  * @swagger
  * /api/packages:
  *   post:
- *     summary: Create a new package
+ *     summary: Create a new package (restaurant_id is auto-filled from category_id)
  *     tags: [Packages]
  *     requestBody:
  *       required: true
@@ -211,7 +214,6 @@ router.get("/packages", fetchPackages);
  *         description: Server error
  */
 router.get("/packages/category/:category_id/:restaurant_id", fetchPackagesByCategory);
-
 
 /**
  * @swagger
