@@ -30,7 +30,11 @@ export const getBlog = async (page = 1, limit = 10, sortBy = 'timestamp', sortOr
 
   const { data, error } = await supabase
     .from("blogs")
-    .select("*, user:user_id(*)")
+    .select(`
+      *,
+      user:user_id(*),
+      blog_images(id, url, filename)
+    `)
     .order(sortBy, { ascending: sortOrder === 'asc' })
     .range(offset, offset + limit - 1);
 
@@ -54,7 +58,11 @@ export const getBlog = async (page = 1, limit = 10, sortBy = 'timestamp', sortOr
 export const getBlogById = async (id) => {
   const { data, error } = await supabase
     .from("blogs")
-    .select("*, user:user_id(*)")
+    .select(`
+      *,
+      user:user_id(*),
+      blog_images(id, url, filename)
+    `)
     .eq("id", id)
     .single();
 
