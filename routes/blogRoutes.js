@@ -51,7 +51,6 @@ const router = express.Router();
  *     Blog:
  *       type: object
  *       required:
- *         - timestamp
  *         - title
  *         - detail
  *         - restaurant_event_categories
@@ -59,9 +58,6 @@ const router = express.Router();
  *       properties:
  *         id:
  *           type: string
- *         timestamp:
- *           type: string
- *           format: date-time
  *         title:
  *           type: string
  *         detail:
@@ -139,15 +135,11 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             required:
- *               - timestamp
  *               - title
  *               - detail
  *               - restaurant_event_categories
  *               - restaurant_main_category
  *             properties:
- *               timestamp:
- *                 type: string
- *                 format: date-time
  *               title:
  *                 type: string
  *               detail:
