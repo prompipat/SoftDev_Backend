@@ -61,6 +61,21 @@ const router = express.Router();
  *             id:
  *               type: string
  *               description: ID of the package category
+ *     PackageImageResponseDto:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Name of the package category
+ *         url:
+ *           type: string
+ *           description: Name of the package category
+ *         filename:
+ *           type: string
+ *           description: Name of the package category
+ *         package_id:
+ *           type: string
+ *           description: Name of the package category
  *
  *     CreatePackageDto:
  *       type: object
@@ -112,6 +127,8 @@ const router = express.Router();
  *                 $ref: '#/components/schemas/PackageDetailResponse'
  *             package_categories:
  *               $ref: '#/components/schemas/PackageCategoryResponse'
+ *             package_images:
+ *               $ref: '#/components/schemas/PackageImageResponseDto'
  *       example:
  *         id: "72f1ea02-1f8b-471b-b7bf-c29e3f003db0"
  *         restaurant_id: "dc930b4f-dfef-47f5-99ca-75a7983975a3"
@@ -131,6 +148,11 @@ const router = express.Router();
  *         package_categories:
  *           id: "9e42e7eb-4402-475f-81c2-7d1dba0cbc52"
  *           name: "ท้องแตก"
+ *         package_images:
+ *           id: "96a2ff07-f991-4ee5-9250-79531d665ff9"
+ *           url: "https://hmceymwezhlacbuuvhzr.supabase.co/storage/v1/object/public/images/package/a9e0298b-a20e-4998-a54a-a6c91bdf56aa-61e07fef7cb39694c57e77ebc4df14f7.jpg"
+ *           filename: "package/a9e0298b-a20e-4998-a54a-a6c91bdf56aa-61e07fef7cb39694c57e77ebc4df14f7.jpg"
+ *           package_id: "72f1ea02-1f8b-471b-b7bf-c29e3f003db0"
  */
 
 /**
@@ -329,6 +351,8 @@ router.get("/packages/category/:category_id/:restaurant_id", fetchPackagesByCate
  *                         url:
  *                           type: string
  *                         filename:
+ *                           type: string
+ *                         package_id:
  *                           type: string
  *       500:
  *         description: Server error
