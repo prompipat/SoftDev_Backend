@@ -43,7 +43,8 @@ export const getPackages = async () => {
     .select(`
       *,
       package_details ( id, name, price, description ),
-      package_categories ( id, name )
+      package_categories ( id, name ),
+      package_images (id, url, filename, package_id)
     `);
 
   if (error) throw new Error(error.message);
@@ -72,7 +73,8 @@ export const getPackageById = async (id) => {
     .select(`
       *,
       package_details ( id, name, price, description ),
-      package_categories ( id, name )
+      package_categories ( id, name ),
+      package_images (id, url, filename, package_id)
     `)
     .eq("id", id)
     .maybeSingle();
@@ -103,7 +105,8 @@ export const getPackagesByCategory = async (categoryId, restaurantId) => {
     .select(`
       *,
       package_details ( id, name, price, description ),
-      package_categories ( id, name )
+      package_categories ( id, name ),
+      package_images (id, url, filename, package_id)
     `)
     .eq("category_id", categoryId)
     .eq("restaurant_id", restaurantId);
@@ -186,6 +189,7 @@ export const getTopPromotions = async () => {
       package_images (
         id,
         url,
+        filename,
         package_id
       )
     `)
