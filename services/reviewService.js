@@ -1,6 +1,10 @@
 import supabase from "../config/supabaseClient.js";
 
 export const createReview = async (reviewData) => {
+  // Set timestamp automatically (Thailand local time)
+  const now = new Date();
+  const thailandTime = new Date(now.getTime() + 7 * 60 * 60 * 1000).toISOString();
+
   const { data, error } = await supabase
     .from("reviews")
     .insert([
@@ -8,17 +12,20 @@ export const createReview = async (reviewData) => {
         review_info: reviewData.review_info,
         restaurant_id: reviewData.restaurant_id,
         user_id: reviewData.user_id,
-        rating: reviewData.rating
-      }
+        rating: reviewData.rating,
+        timestamp: thailandTime, // auto set
+      },
     ])
-    .select();
+    .select("*, user:user_id(*)"); // populate user
 
   if (error) throw new Error(error.message);
   return data;
 };
 
 export const getReview = async () => {
-  const { data, error } = await supabase.from("reviews").select("*");
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*, user:user_id(*)"); // populate user
 
   if (error) throw new Error(error.message);
   return data;
@@ -27,7 +34,7 @@ export const getReview = async () => {
 export const getReviewById = async (id) => {
   const { data, error } = await supabase
     .from("reviews")
-    .select("*")
+    .select("*, user:user_id(*)") // populate user
     .eq("id", id)
     .single();
 
@@ -35,14 +42,12 @@ export const getReviewById = async (id) => {
   return data;
 };
 
-
-
 export const updateReview = async (id, updates) => {
   const { data, error } = await supabase
     .from("reviews")
     .update(updates)
     .eq("id", id)
-    .select();
+    .select("*, user:user_id(*)"); // populate user
 
   if (error) throw new Error(error.message);
   return data;
@@ -52,10 +57,8 @@ export const deleteReview = async (id) => {
   const { error } = await supabase
     .from("reviews")
     .delete()
-    .eq("id", id)
-    .select();
+    .eq("id", id);
 
   if (error) throw new Error(error.message);
-  return { success: true, message: "review deleted successfully" };
+  return { success: true, message: "Review deleted successfully" };
 };
-
