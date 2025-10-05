@@ -27,7 +27,7 @@ export const getRestaurants = async (page = 1, limit = 10) => {
   const { data, error } = await supabase
     .from("restaurants")
     .select(`
-      id, name, description,
+      id, name, user_id, description, tax_id, location, sub_location,
       restaurants_images ( id, url, filename ),
       restaurant_food_category_map (
         food_category:restaurant_food_categories ( id, name )
@@ -56,6 +56,10 @@ export const getRestaurants = async (page = 1, limit = 10) => {
       id: r.id,
       name: r.name,
       description: r.description,
+      user_id: r.user_id,
+      tax_id: r.tax_id,
+      sub_location: r.sub_location,
+      location: r.location,
       images: (r.restaurants_images ?? []).map(img => ({
         id: img.id,
         url: img.url,
@@ -77,7 +81,7 @@ export const getRestaurantById = async (id) => {
   const { data, error } = await supabase
     .from("restaurants")
     .select(`
-      id, name, description,
+      id, name, user_id, description, tax_id, location, sub_location,
       restaurants_images ( id, url, filename ),
       restaurant_food_category_map (
         food_category:restaurant_food_categories ( id, name )
@@ -108,6 +112,10 @@ export const getRestaurantById = async (id) => {
     id: data.id,
     name: data.name,
     description: data.description,
+    user_id: data.user_id,
+    tax_id: data.tax_id,
+    sub_location: data.sub_location,
+    location: data.location,
     images: (data.restaurants_images ?? []).map(img => ({
       id: img.id,
       url: img.url,
@@ -128,7 +136,7 @@ export const getTopRestaurants = async (limit = 5) => {
   const { data, error } = await supabase
     .from("restaurants")
     .select(`
-      id, name, description,
+      id, name, user_id, description, tax_id, location, sub_location,
       restaurants_images ( id, url, filename ),
       restaurant_food_category_map (
         food_category:restaurant_food_categories ( id, name )
@@ -157,6 +165,10 @@ export const getTopRestaurants = async (limit = 5) => {
       id: r.id,
       name: r.name,
       description: r.description,
+      user_id: r.user_id,
+      tax_id: r.tax_id,
+      sub_location: r.sub_location,
+      location: r.location,
       images: (r.restaurants_images ?? []).map(img => ({
         id: img.id,
         url: img.url,
@@ -226,7 +238,7 @@ export const searchRestaurants = async (query, filters = {}, page = 1, limit = 1
     let baseBuilder = supabase
       .from("restaurants")
       .select(`
-        id, name, description,
+        id, name, user_id, description, tax_id, location, sub_location,
         restaurants_images ( id, url, filename ),
         restaurant_main_category_map (
           main_category:restaurant_main_category ( id, name )
@@ -305,6 +317,10 @@ export const searchRestaurants = async (query, filters = {}, page = 1, limit = 1
         id: r.id,
         name: r.name,
         description: r.description,
+        user_id: r.user_id,
+        tax_id: r.tax_id,
+        sub_location: r.sub_location,
+        location: r.location,
         images: (r.restaurants_images ?? []).map(img => ({
           id: img.id,
           url: img.url,
