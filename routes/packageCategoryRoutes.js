@@ -1,40 +1,133 @@
+import express from "express";
 import {
   addPackageCategory,
   fetchPackageCategories,
   fetchPackageCategoryById,
   modifyPackageCategory,
   removePackageCategory,
-  fetchPackageCategoriesByRestaurant
+  fetchPackageCategoriesByRestaurant,
 } from "../controllers/packageCategoryController.js";
-import express from "express";
 
 const router = express.Router();
+
 /**
  * @swagger
  * components:
  *   schemas:
- *     PackageCategory:
+ *     PackageDetail:
  *       type: object
- *       required:
- *         - name
- *         - restaurant_id
  *       properties:
+ *         id:
+ *           type: string
+ *           description: ID of the package detail
  *         name:
  *           type: string
- *           description: The name of the package category
- *         restaurant_id:
- *           type: uuid
- *           description: The ID of the restaurant this category belongs to
+ *           description: Name of the package detail
+ *         description:
+ *           type: string
+ *           description: Description of the package detail
+ *         price:
+ *           type: number
+ *           format: float
+ *           description: Current price (may include discount)
+ *         old_price:
+ *           type: number
+ *           format: float
+ *           nullable: true
+ *           description: Original price before discount (null if no discount)
+ *         has_discount:
+ *           type: boolean
+ *           description: Indicates if the package detail currently has a discount
  *       example:
- *         name: Buffet
- *         restaurant_id: 123e4567-e89b-12d3-a456-426614174000
+ *         id: "pdetail-001"
+ *         name: "Family 4 Buffet"
+ *         description: "อาหารสำหรับ 4 ท่าน พร้อมของหวาน"
+ *         old_price: 1000
+ *         price: 850
+ *         has_discount: true
+ *
+ *     PackageInCategory:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ID of the package
+ *         name:
+ *           type: string
+ *           description: Name of the package
+ *         description:
+ *           type: string
+ *           description: Description of the package
+ *         discount:
+ *           type: number
+ *           format: float
+ *           description: Discount percentage for the package
+ *         start_discount_date:
+ *           type: string
+ *           format: date
+ *           description: Start date of the discount
+ *         end_discount_date:
+ *           type: string
+ *           format: date
+ *           description: End date of the discount
+ *         package_details:
+ *           type: array
+ *           description: List of package details belonging to this package
+ *           items:
+ *             $ref: '#/components/schemas/PackageDetail'
+ *       example:
+ *         id: "pkg-001"
+ *         name: "Luxury Buffet Set"
+ *         description: "ชุดอาหารหรูหราพร้อมไวน์"
+ *         discount: 15
+ *         start_discount_date: "2025-10-01"
+ *         end_discount_date: "2025-10-31"
+ *         package_details:
+ *           - id: "pd-101"
+ *             name: "Standard Buffet"
+ *             description: "บุฟเฟ่ต์มาตรฐาน"
+ *             old_price: 500
+ *             price: 425
+ *             has_discount: true
+ *
+ *     PackageCategoryWithPackages:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ID of the package category
+ *         name:
+ *           type: string
+ *           description: Name of the package category
+ *         packages:
+ *           type: array
+ *           description: List of packages under this category (with package details)
+ *           items:
+ *             $ref: '#/components/schemas/PackageInCategory'
+ *       example:
+ *         id: "cat-001"
+ *         name: "บุฟเฟ่ต์สุดคุ้ม"
+ *         packages:
+ *           - id: "pkg-001"
+ *             name: "Luxury Buffet Set"
+ *             description: "ชุดอาหารหรูหราพร้อมไวน์"
+ *             discount: 15
+ *             start_discount_date: "2025-10-01"
+ *             end_discount_date: "2025-10-31"
+ *             package_details:
+ *               - id: "pd-101"
+ *                 name: "Standard Buffet"
+ *                 description: "บุฟเฟ่ต์มาตรฐาน"
+ *                 old_price: 500
+ *                 price: 425
+ *                 has_discount: true
  */
 
 /**
  * @swagger
  * tags:
- *   name: PackageCategories
- *   description: The package categories managing API
+ *   name: Package Categories
+ *   description: Manage package categories and their packages
  */
 
 /**
@@ -42,117 +135,97 @@ const router = express.Router();
  * /api/package-categories:
  *   post:
  *     summary: Create a new package category
- *     tags: [PackageCategories]
+ *     tags: [Package Categories]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/PackageCategory'
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
  *     responses:
  *       201:
- *         description: The package category was successfully created
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PackageCategory'
+ *         description: Category created successfully
  *       400:
- *         description: Bad Request
- *       500:
- *         description: Some server error
- *
+ *         description: Invalid input
  *   get:
- *     summary: Returns the list of all the package categories
- *     tags: [PackageCategories]
+ *     summary: Get all package categories
+ *     tags: [Package Categories]
  *     responses:
  *       200:
- *         description: The list of the package categories
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/PackageCategory'
+ *         description: List of all categories
  *       500:
- *         description: Some server error
- *
+ *         description: Server error
+ */
+router.post("/package-categories", addPackageCategory);
+router.get("/package-categories", fetchPackageCategories);
+
+/**
+ * @swagger
  * /api/package-categories/{id}:
  *   get:
- *     summary: Get the package category by id
- *     tags: [PackageCategories]
+ *     summary: Get a package category by ID
+ *     tags: [Package Categories]
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: string
- *         required: true
- *         description: The package category id
  *     responses:
  *       200:
- *         description: The package category description by id
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PackageCategory'
+ *         description: Package category details
  *       404:
- *         description: The package category was not found
- *       500:
- *         description: Some server error
- *
+ *         description: Category not found
  *   put:
  *     summary: Update a package category
- *     tags: [PackageCategories]
+ *     tags: [Package Categories]
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: string
- *         required: true
- *         description: The package category id
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/PackageCategory'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
  *     responses:
  *       200:
- *         description: The package category was updated
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PackageCategory'
- *       400:
- *         description: Bad Request
+ *         description: Category updated successfully
  *       404:
- *         description: The package category was not found
- *       500:
- *         description: Some server error
- *
+ *         description: Category not found
  *   delete:
- *     summary: Remove the package category by id
- *     tags: [PackageCategories]
+ *     summary: Delete a package category
+ *     tags: [Package Categories]
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: string
- *         required: true
- *         description: The package category id
  *     responses:
  *       200:
- *         description: The package category was deleted
+ *         description: Category deleted successfully
  *       404:
- *         description: The package category was not found
- *       500:
- *         description: Some server error
+ *         description: Category not found
  */
+
 /**
  * @swagger
  * /api/package-categories/restaurant/{restaurant_id}:
  *   get:
- *     summary: Get all package categories for a specific restaurant, including their packages
- *     tags: [PackageCategories]
+ *     summary: Get package categories by restaurant ID (includes packages and package details)
+ *     tags: [Package Categories]
  *     parameters:
  *       - in: path
  *         name: restaurant_id
@@ -162,49 +235,22 @@ const router = express.Router();
  *         description: ID of the restaurant
  *     responses:
  *       200:
- *         description: List of categories with their packages
+ *         description: List of categories with their packages and package details
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   name:
- *                     type: string
- *                   packages:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         id:
- *                           type: string
- *                         name:
- *                           type: string
- *                         description:
- *                           type: string
- *                         discount:
- *                           type: number
- *                         start_discount_date:
- *                           type: string
- *                           format: date
- *                         end_discount_date:
- *                           type: string
- *                           format: date
+ *                 $ref: '#/components/schemas/PackageCategoryWithPackages'
  *       404:
  *         description: No categories found
  *       500:
  *         description: Server error
  */
+router.get("/package-categories/restaurant/:restaurant_id", fetchPackageCategoriesByRestaurant);
 
-router.post("/package-categories", addPackageCategory);
-router.get("/package-categories", fetchPackageCategories);
 router.get("/package-categories/:id", fetchPackageCategoryById);
 router.put("/package-categories/:id", modifyPackageCategory);
 router.delete("/package-categories/:id", removePackageCategory);
-
-router.get("/package-categories/restaurant/:restaurant_id", fetchPackageCategoriesByRestaurant);
 
 export default router;

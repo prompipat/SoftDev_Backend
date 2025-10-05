@@ -56,8 +56,8 @@ export const deletePackageCategory = async (id) => {
 };
 
 
-export const getPackageCategoriesByRestaurant = async (restaurantId) => {
-  const { data, error } = await supabase
+export const getPackageCategoriesByRestaurant = async (restaurant_id) => {
+ const { data: categories, error } = await supabase
     .from("package_categories")
     .select(`
       id,
@@ -68,11 +68,50 @@ export const getPackageCategoriesByRestaurant = async (restaurantId) => {
         description,
         discount,
         start_discount_date,
-        end_discount_date
+        end_discount_date,
+        package_details (
+          id,
+          name,
+          description,
+          price
+        )
       )
     `)
-    .eq("restaurant_id", restaurantId);
+    .eq("restaurant_id", restaurant_id);
 
   if (error) throw new Error(error.message);
-  return data;
+
+  const now = new Date();
+
+  // --- apply discount logic to each package and its details --- //
+ const populatedCategories = (categories ?? []).map((category) => ({
+    ...category,
+    packages: (category.packages ?? []).map((pkg) => {
+      const hasDiscount = pkg.discount && pkg.discount > 0;
+
+      const packageDetails = (pkg.package_details ?? []).map((detail) => {
+        if (hasDiscount) {
+          const discountedPrice = detail.price * (1 - pkg.discount / 100);
+          return {
+            ...detail,
+            old_price: detail.price,
+            price: Number(discountedPrice.toFixed(2)),
+            has_discount: true,
+          };
+        }
+        return {
+          ...detail,
+          old_price: null,
+          has_discount: false,
+        };
+      });
+
+      return {
+        ...pkg,
+        package_details: packageDetails,
+      };
+    }),
+  }));
+
+  return populatedCategories;
 };
