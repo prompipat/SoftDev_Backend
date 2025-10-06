@@ -234,7 +234,7 @@ router.get("/restaurants/top", fetchTopRestaurants);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Restaurant'
+ *             $ref: '#/components/schemas/CreateRestaurant'
  *     responses:
  *       200:
  *         description: Updated restaurant details
