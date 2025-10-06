@@ -14,113 +14,110 @@ const router = express.Router();
  * @swagger
  * components:
  *   schemas:
- *     PackageDetail:
+ *     PackageImage:
  *       type: object
  *       properties:
  *         id:
  *           type: string
- *           description: ID of the package detail
+ *         url:
+ *           type: string
+ *         filename:
+ *           type: string
+ *       example:
+ *         id: "fa6d5c3b-1234-4b1a-8fd2-9d2caa78a123"
+ *         url: "https://example-bucket.supabase.co/storage/v1/object/public/image/package/family_feast.jpg"
+ *         filename: "family_feast.jpg"
+ *
+ *     PackageDetailWithDiscount:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
  *         name:
  *           type: string
- *           description: Name of the package detail
  *         description:
  *           type: string
- *           description: Description of the package detail
  *         price:
  *           type: number
- *           format: float
- *           description: Current price (may include discount)
  *         old_price:
  *           type: number
- *           format: float
  *           nullable: true
- *           description: Original price before discount (null if no discount)
  *         has_discount:
  *           type: boolean
- *           description: Indicates if the package detail currently has a discount
  *       example:
- *         id: "pdetail-001"
- *         name: "Family 4 Buffet"
- *         description: "อาหารสำหรับ 4 ท่าน พร้อมของหวาน"
- *         old_price: 1000
- *         price: 850
+ *         id: "123e4567-e89b-12d3-a456-426614174000"
+ *         name: "Family Buffet 10 ท่าน"
+ *         description: "บุฟเฟ่ต์สำหรับ 10 ท่าน พร้อมของหวาน"
+ *         price: 270
+ *         old_price: 300
  *         has_discount: true
  *
- *     PackageInCategory:
+ *     PackageWithDetailsAndImages:
  *       type: object
  *       properties:
  *         id:
  *           type: string
- *           description: ID of the package
  *         name:
  *           type: string
- *           description: Name of the package
  *         description:
  *           type: string
- *           description: Description of the package
  *         discount:
  *           type: number
- *           format: float
- *           description: Discount percentage for the package
- *         start_discount_date:
- *           type: string
- *           format: date
- *           description: Start date of the discount
- *         end_discount_date:
- *           type: string
- *           format: date
- *           description: End date of the discount
  *         package_details:
  *           type: array
- *           description: List of package details belonging to this package
  *           items:
- *             $ref: '#/components/schemas/PackageDetail'
+ *             $ref: '#/components/schemas/PackageDetailWithDiscount'
+ *         package_images:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/PackageImage'
  *       example:
- *         id: "pkg-001"
- *         name: "Luxury Buffet Set"
- *         description: "ชุดอาหารหรูหราพร้อมไวน์"
- *         discount: 15
- *         start_discount_date: "2025-10-01"
- *         end_discount_date: "2025-10-31"
+ *         id: "b42e789a-59b4-44b5-b5cb-c1b9395e5e6b"
+ *         name: "Family Feast"
+ *         description: "A complete family meal set"
+ *         discount: 10
  *         package_details:
- *           - id: "pd-101"
- *             name: "Standard Buffet"
- *             description: "บุฟเฟ่ต์มาตรฐาน"
- *             old_price: 500
- *             price: 425
+ *           - id: "123e4567-e89b-12d3-a456-426614174000"
+ *             name: "Family Buffet 10 ท่าน"
+ *             description: "บุฟเฟ่ต์สำหรับ 10 ท่าน พร้อมของหวาน"
+ *             price: 270
+ *             old_price: 300
  *             has_discount: true
+ *         package_images:
+ *           - id: "fa6d5c3b-1234-4b1a-8fd2-9d2caa78a123"
+ *             url: "https://example.com/image/package1.jpg"
+ *             filename: "package1.jpg"
  *
  *     PackageCategoryWithPackages:
  *       type: object
  *       properties:
  *         id:
  *           type: string
- *           description: ID of the package category
  *         name:
  *           type: string
- *           description: Name of the package category
  *         packages:
  *           type: array
- *           description: List of packages under this category (with package details)
  *           items:
- *             $ref: '#/components/schemas/PackageInCategory'
+ *             $ref: '#/components/schemas/PackageWithDetailsAndImages'
  *       example:
- *         id: "cat-001"
- *         name: "บุฟเฟ่ต์สุดคุ้ม"
+ *         id: "9e42e7eb-4402-475f-81c2-7d1dba0cbc52"
+ *         name: "บุฟเฟ่ต์"
  *         packages:
- *           - id: "pkg-001"
- *             name: "Luxury Buffet Set"
- *             description: "ชุดอาหารหรูหราพร้อมไวน์"
- *             discount: 15
- *             start_discount_date: "2025-10-01"
- *             end_discount_date: "2025-10-31"
+ *           - id: "b42e789a-59b4-44b5-b5cb-c1b9395e5e6b"
+ *             name: "Family Feast"
+ *             description: "A complete family meal set"
+ *             discount: 10
  *             package_details:
- *               - id: "pd-101"
- *                 name: "Standard Buffet"
- *                 description: "บุฟเฟ่ต์มาตรฐาน"
- *                 old_price: 500
- *                 price: 425
+ *               - id: "123e4567-e89b-12d3-a456-426614174000"
+ *                 name: "Family Buffet 10 ท่าน"
+ *                 description: "บุฟเฟ่ต์สำหรับ 10 ท่าน พร้อมของหวาน"
+ *                 price: 270
+ *                 old_price: 300
  *                 has_discount: true
+ *             package_images:
+ *               - id: "fa6d5c3b-1234-4b1a-8fd2-9d2caa78a123"
+ *                 url: "https://example.com/image/package1.jpg"
+ *                 filename: "package1.jpg"
  */
 
 /**
@@ -224,7 +221,7 @@ router.get("/package-categories", fetchPackageCategories);
  * @swagger
  * /api/package-categories/restaurant/{restaurant_id}:
  *   get:
- *     summary: Get package categories by restaurant ID (includes packages and package details)
+ *     summary: Get package categories by restaurant ID (includes packages, package details and images)
  *     tags: [Package Categories]
  *     parameters:
  *       - in: path
@@ -235,7 +232,7 @@ router.get("/package-categories", fetchPackageCategories);
  *         description: ID of the restaurant
  *     responses:
  *       200:
- *         description: List of categories with their packages and package details
+ *         description: List of categories with their packages, details and images
  *         content:
  *           application/json:
  *             schema:

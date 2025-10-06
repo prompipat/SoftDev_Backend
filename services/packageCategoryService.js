@@ -57,7 +57,7 @@ export const deletePackageCategory = async (id) => {
 
 
 export const getPackageCategoriesByRestaurant = async (restaurant_id) => {
- const { data: categories, error } = await supabase
+const { data: categories, error } = await supabase
     .from("package_categories")
     .select(`
       id,
@@ -67,13 +67,16 @@ export const getPackageCategoriesByRestaurant = async (restaurant_id) => {
         name,
         description,
         discount,
-        start_discount_date,
-        end_discount_date,
         package_details (
           id,
           name,
           description,
           price
+        ),
+        package_images (
+          id,
+          url,
+          filename
         )
       )
     `)
@@ -81,10 +84,8 @@ export const getPackageCategoriesByRestaurant = async (restaurant_id) => {
 
   if (error) throw new Error(error.message);
 
-  const now = new Date();
-
-  // --- apply discount logic to each package and its details --- //
- const populatedCategories = (categories ?? []).map((category) => ({
+  // --- apply discount logic (ignore start/end date) --- //
+  const populatedCategories = (categories ?? []).map((category) => ({
     ...category,
     packages: (category.packages ?? []).map((pkg) => {
       const hasDiscount = pkg.discount && pkg.discount > 0;
@@ -109,6 +110,7 @@ export const getPackageCategoriesByRestaurant = async (restaurant_id) => {
       return {
         ...pkg,
         package_details: packageDetails,
+        package_images: pkg.package_images ?? [],
       };
     }),
   }));

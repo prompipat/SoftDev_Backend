@@ -3,7 +3,8 @@ import{
     , getReview
     , getReviewById   
     , updateReview
-    , deleteReview
+    , deleteReview,
+    getReviewsByRestaurantId,
 } from "../services/reviewService.js";
 
 export const addReview = async (req, res) => {
@@ -65,3 +66,13 @@ export const removeReview = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+export const fetchReviewsByRestaurant = async (req, res) => {
+  try {
+    const { restaurant_id } = req.params;
+    const data = await getReviewsByRestaurantId(restaurant_id);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

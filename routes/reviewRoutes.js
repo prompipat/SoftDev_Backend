@@ -6,6 +6,7 @@ import {
   fetchReviewById,
   modifyReview,
   removeReview,
+  fetchReviewsByRestaurant
 } from "../controllers/reviewController.js";
 
 const router = express.Router();
@@ -234,6 +235,35 @@ router.get("/reviews", fetchReviews);
  *       500:
  *         description: Server error
  */
+
+/**
+ * @swagger
+ * /api/reviews/restaurant/{restaurant_id}:
+ *   get:
+ *     summary: Get all reviews for a specific restaurant (populated with user)
+ *     tags: [Reviews]
+ *     parameters:
+ *       - in: path
+ *         name: restaurant_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the restaurant
+ *     responses:
+ *       200:
+ *         description: List of reviews for the restaurant
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Review'
+ *       404:
+ *         description: No reviews found for this restaurant
+ *       500:
+ *         description: Server error
+ */
+router.get("/reviews/restaurant/:restaurant_id", fetchReviewsByRestaurant);
 router.get("/reviews/:id", fetchReviewById);
 router.put("/reviews/:id", authMiddleware, modifyReview);
 router.delete("/reviews/:id", authMiddleware, removeReview);
