@@ -62,3 +62,13 @@ export const deleteReview = async (id) => {
   if (error) throw new Error(error.message);
   return { success: true, message: "Review deleted successfully" };
 };
+
+export const getReviewsByRestaurantId = async (restaurantId) => {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*, user:user_id(*)") // populate user
+    .eq("restaurant_id", restaurantId);
+
+  if (error) throw new Error(error.message);
+  return data;
+};
