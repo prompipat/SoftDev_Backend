@@ -148,20 +148,60 @@ const router = express.Router();
  *       400:
  *         description: Invalid input
  *   get:
- *     summary: Get all restaurants with populated categories
+ *     summary: Get all restaurants with pagination and populated categories
  *     tags: [Restaurants]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         required: false
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         required: false
+ *         description: Number of restaurants per page
  *     responses:
  *       200:
- *         description: List of all restaurants
+ *         description: Paginated list of restaurants
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Restaurant'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Restaurant'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                       example: 1
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 5
+ *                     totalItems:
+ *                       type: integer
+ *                       example: 45
+ *                     itemsPerPage:
+ *                       type: integer
+ *                       example: 10
+ *                     hasNextPage:
+ *                       type: boolean
+ *                       example: true
+ *                     hasPreviousPage:
+ *                       type: boolean
+ *                       example: false
  *       500:
  *         description: Server error
  */
+
 router.post("/restaurants", authMiddleware, addRestaurant);
 router.get("/restaurants", fetchRestaurants);
 
