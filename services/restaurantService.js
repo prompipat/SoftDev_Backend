@@ -20,11 +20,9 @@ export const createRestaurant = async (restaurantData) => {
   if (error) throw new Error(error.message);
   return data;
 };
-export const getRestaurants = async (page = 1, limit = 10) => {
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
+export const getRestaurants = async () => {
 
-  const { data, error, count } = await supabase
+  const { data, error } = await supabase
     .from("restaurants")
     .select(`
       id, name, user_id, description, tax_id, location, sub_location,
@@ -39,13 +37,12 @@ export const getRestaurants = async (page = 1, limit = 10) => {
         main_category:restaurant_main_category ( id, name )
       ),
       reviews (id, review_info, rating)
-    `, { count: "exact" }) // <-- enable count for pagination
-    .range(from, to);
+    `);
 
-  if (error) throw new Error(error.message);
+  if (error) throw error;
 
   const restaurants = (data ?? []).map(r => {
-    const reviews = r.reviews ?? [];
+    const reviews = r.reviews;
     const ratings = reviews.map(rv => rv.rating).filter(r => typeof r === "number");
     const totalReview = ratings.length;
     const avgRating = totalReview > 0
@@ -74,17 +71,7 @@ export const getRestaurants = async (page = 1, limit = 10) => {
     };
   });
 
-  return {
-    data: restaurants,
-    pagination: {
-      currentPage: page,
-      totalPages: Math.ceil((count ?? 0) / limit),
-      totalItems: count ?? 0,
-      itemsPerPage: limit,
-      hasNextPage: page * limit < (count ?? 0),
-      hasPreviousPage: page > 1,
-    },
-  };
+  return restaurants;
 };
 
 export const getRestaurantById = async (id) => {
