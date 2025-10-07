@@ -20,9 +20,7 @@ export const createRestaurant = async (restaurantData) => {
   if (error) throw new Error(error.message);
   return data;
 };
-export const getRestaurants = async (page = 1, limit = 10) => {
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
+export const getRestaurants = async () => {
 
   const { data, error } = await supabase
     .from("restaurants")
@@ -39,8 +37,7 @@ export const getRestaurants = async (page = 1, limit = 10) => {
         main_category:restaurant_main_category ( id, name )
       ),
       reviews (id, review_info, rating)
-    `)
-    .range(from, to);
+    `);
 
   if (error) throw error;
 
