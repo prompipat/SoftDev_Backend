@@ -19,7 +19,6 @@ export const createPackage = async (packageData) => {
   const insertData = {
     restaurant_id: category.restaurant_id,  // auto from category
     name: packageData.name,
-    description: packageData.description,
     category_id: packageData.category_id,
     discount: packageData.discount || null,
     start_discount_date: packageData.start_discount_date || null,
@@ -182,7 +181,6 @@ export const getTopPromotions = async () => {
     .select(`
       id,
       name,
-      description,
       discount,
       start_discount_date,
       end_discount_date,

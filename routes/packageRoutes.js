@@ -91,9 +91,6 @@ const router = express.Router();
  *         name:
  *           type: string
  *           description: Name of the package
- *         description:
- *           type: string
- *           description: Detailed description of the package
  *         category_id:
  *           type: string
  *           description: ID of the package category (used to auto-fill restaurant_id)
@@ -133,7 +130,6 @@ const router = express.Router();
  *         id: "72f1ea02-1f8b-471b-b7bf-c29e3f003db0"
  *         restaurant_id: "dc930b4f-dfef-47f5-99ca-75a7983975a3"
  *         name: "Family Feast"
- *         description: "A full meal package for a family of four."
  *         category_id: "9e42e7eb-4402-475f-81c2-7d1dba0cbc52"
  *         discount: 10
  *         start_discount_date: "2023-10-01"
@@ -328,8 +324,6 @@ router.get("/packages/category/:category_id/:restaurant_id", fetchPackagesByCate
  *                   id:
  *                     type: string
  *                   name:
- *                     type: string
- *                   description:
  *                     type: string
  *                   price:
  *                     type: number
