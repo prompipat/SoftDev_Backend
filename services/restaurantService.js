@@ -193,6 +193,77 @@ export const getTopRestaurants = async (limit = 5) => {
   return ranked;
 };
 
+export const getTopFavoriteRestaurants = async (limit = 5) => {
+  const { data, error } = await supabase
+    .from("restaurants")
+    .select(`
+      id, name, user_id, description, tax_id, location, sub_location,
+      restaurants_images ( id, url, filename ),
+      restaurant_food_category_map (
+        food_category:restaurant_food_categories ( id, name )
+      ),
+      restaurant_event_category_map (
+        event_category:restaurant_event_categories ( id, name )
+      ),
+      restaurant_main_category_map (
+        main_category:restaurant_main_category ( id, name )
+      ),
+      reviews ( id, review_info, rating ),
+      favorites ( id, user_id, restaurant_id )
+    `);
+
+  if (error) throw new Error(error.message);
+
+  const restaurants = (data ?? []).map(r => {
+    const reviews = r.reviews ?? [];
+    const ratings = reviews.map(rv => rv.rating).filter(r => typeof r === "number");
+    const totalReview = ratings.length;
+    const avgRating =
+      totalReview > 0
+        ? ratings.reduce((sum, val) => sum + val, 0) / totalReview
+        : null;
+
+    const favorites = r.favorites ?? [];
+    const favoriteCount = favorites.length;
+
+    return {
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      user_id: r.user_id,
+      tax_id: r.tax_id,
+      sub_location: r.sub_location,
+      location: r.location,
+      images: (r.restaurants_images ?? []).map(img => ({
+        id: img.id,
+        url: img.url,
+        filename: img.filename,
+      })),
+      food_categories: (r.restaurant_food_category_map ?? []).map(fc => fc.food_category),
+      event_categories: (r.restaurant_event_category_map ?? []).map(ec => ec.event_category),
+      main_categories: (r.restaurant_main_category_map ?? []).map(mc => mc.main_category),
+      reviews,
+      avgRating,
+      totalReview,
+      favoriteCount,
+    };
+  });
+
+  const ranked = restaurants
+    .sort((a, b) => {
+      if (b.favoriteCount === a.favoriteCount) {
+        if (b.avgRating === a.avgRating) {
+          return b.totalReview - a.totalReview;
+        }
+        return (b.avgRating ?? 0) - (a.avgRating ?? 0);
+      }
+      return b.favoriteCount - a.favoriteCount;
+    })
+    .slice(0, limit);
+
+  return ranked;
+};
+
 
 export const updateRestaurant = async (id, updates) => {
   const { data, error } = await supabase

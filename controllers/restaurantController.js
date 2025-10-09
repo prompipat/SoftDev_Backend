@@ -5,7 +5,8 @@ import {
   updateRestaurant,
   deleteRestaurant,
   searchRestaurants,
-  getTopRestaurants
+  getTopRestaurants,
+  getTopFavoriteRestaurants
 } from "../services/restaurantService.js";
 
 export const addRestaurant = async (req, res) => {
@@ -84,6 +85,16 @@ export const fetchTopRestaurants = async (req, res) => {
     const { limit = 5 } = req.query;
     const topRestaurants = await getTopRestaurants(parseInt(limit));
     res.status(200).json(topRestaurants);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const fetchTopFavoriteRestaurants = async (req, res) => {
+  try {
+    const { limit = 5 } = req.query;
+    const topFavoriteRestaurants = await getTopFavoriteRestaurants(parseInt(limit));
+    res.status(200).json(topFavoriteRestaurants);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
