@@ -74,6 +74,7 @@ const VALID_STATUSES = [
   "waiting for payment",
   "cancel",
   "preparing",
+  "done preparing",
   "finished"
 ];
 
