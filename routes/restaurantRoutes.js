@@ -7,7 +7,8 @@ import {
   modifyRestaurant,
   removeRestaurant,
   findRestaurants,
-  fetchTopRestaurants
+  fetchTopRestaurants,
+  fetchTopFavoriteRestaurants
 } from "../controllers/restaurantController.js";
 
 const router = express.Router();
@@ -126,6 +127,36 @@ const router = express.Router();
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     RestaurantWithFavoriteCount:
+ *       allOf:
+ *         - $ref: '#/components/schemas/Restaurant'
+ *         - type: object
+ *           properties:
+ *             favoriteCount:
+ *               type: integer
+ *               description: Number of times this restaurant was favorited
+ *       example:
+ *         id: "123e4567-e89b-12d3-a456-426614174000"
+ *         name: Tasty Corner
+ *         description: Best street food in town
+ *         user_id: "user-uuid-001"
+ *         tax_id: "TX123456"
+ *         sub_location: "Downtown"
+ *         location: "Bangkok"
+ *         main_categories: [{ id: "1", name: "Snack Box" }]
+ *         food_categories: [{ id: "2", name: "Dessert" }]
+ *         event_categories: [{ id: "3", name: "Party Event" }]
+ *         reviews: [{ id: "64d3cbca-02c3-44f3-82e0-bcd1c273ab18", rating: 3.5, review_info: "Well" }]
+ *         totalReview: 1
+ *         avgRating: 3.5
+ *         favoriteCount: 0
+ */
+
+
+/**
+ * @swagger
  * /api/restaurants:
  *   post:
  *     summary: Create a new restaurant (requires authentication)
@@ -192,6 +223,34 @@ router.get("/restaurants", fetchRestaurants);
  *         description: Server error
  */
 router.get("/restaurants/top", fetchTopRestaurants);
+
+/**
+ * @swagger
+ * /api/restaurants/top/favorite:
+ *   get:
+ *     summary: Get top favorite restaurants ranked by total favorite and average rating
+ *     tags: [Restaurants]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 5
+ *         required: false
+ *         description: Number of top favorite restaurants to return
+ *     responses:
+ *       200:
+ *         description: List of top favorite restaurants by total favorite and average rating
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/RestaurantWithFavoriteCount'
+ *       500:
+ *         description: Server error
+ */
+router.get("/restaurants/top/favorite", fetchTopFavoriteRestaurants);
 
 /**
  * @swagger
