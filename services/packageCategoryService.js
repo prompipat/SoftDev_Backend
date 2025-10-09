@@ -65,7 +65,6 @@ const { data: categories, error } = await supabase
       packages (
         id,
         name,
-        description,
         discount,
         package_details (
           id,
