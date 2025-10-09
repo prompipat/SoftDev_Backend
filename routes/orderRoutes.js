@@ -210,7 +210,7 @@ router.get("/orders", fetchOrders);
  *             properties:
  *               status:
  *                 type: string
- *                 enum: [pending, waiting for payment, cancel, preparing, finished]
+ *                 enum: [pending, waiting for payment, cancel, preparing ,done preparing, finished]
  *             example:
  *               status: "waiting for payment"
  *     responses:
@@ -236,7 +236,7 @@ router.get("/orders", fetchOrders);
  *         name: status
  *         schema:
  *           type: string
- *           enum: [all, pending, waiting for payment, cancel, preparing, finished]
+ *           enum: [all, pending, waiting for payment, cancel, preparing, done preparing , finished]
  *           default: all
  *         description: Filter orders by status (default = all)
  *     responses:
@@ -270,7 +270,7 @@ router.get("/orders", fetchOrders);
  *         name: status
  *         schema:
  *           type: string
- *           enum: [all, pending, waiting for payment, cancel, preparing, finished]
+ *           enum: [all, pending, waiting for payment, cancel, preparing, done preparing, finished]
  *           default: all
  *         description: Filter orders by status
  *     responses:
