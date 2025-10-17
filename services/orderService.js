@@ -24,17 +24,27 @@ export const createOrder = async (orderData) => {
 
     let finalUnitPrice = packageDetail.price;
 
-  
-   
-    
-    // 2. apply discount
+    // 2. Apply discount only if within valid discount date range
     const pkg = packageDetail.package;
-    finalUnitPrice =  finalUnitPrice - (finalUnitPrice * pkg.discount) / 100;
-      
+
+    if (pkg && pkg.discount && pkg.discount > 0) {
+      const now = new Date();
+      const start = pkg.start_discount_date ? new Date(pkg.start_discount_date) : null;
+      const end = pkg.end_discount_date ? new Date(pkg.end_discount_date) : null;
+
+      const isActive =
+        start && end
+          ? now >= start && now <= end
+          : false;
+
+      if (isActive) {
+        finalUnitPrice = finalUnitPrice - (finalUnitPrice * pkg.discount) / 100;
+      }
+    }
 
     // 3. Assign calculated values
-    orderData.unit_price = finalUnitPrice;
-    orderData.total_price = finalUnitPrice * orderData.participants;
+    orderData.unit_price = Number(finalUnitPrice.toFixed(2));
+    orderData.total_price = Number((finalUnitPrice * orderData.participants).toFixed(2));
     orderData.status = orderData.status || "pending";
 
     // 4. Insert order
