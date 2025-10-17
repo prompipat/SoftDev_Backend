@@ -17,8 +17,9 @@ export const createPackage = async (packageData) => {
 
   // 3. Attach restaurant_id automatically
   const insertData = {
-    restaurant_id: category.restaurant_id,  // auto from category
+    restaurant_id: category.restaurant_id, // auto from category
     name: packageData.name,
+    description: packageData.description,
     category_id: packageData.category_id,
     discount: packageData.discount || null,
     start_discount_date: packageData.start_discount_date || null,
@@ -36,6 +37,18 @@ export const createPackage = async (packageData) => {
   return data;
 };
 
+// 🧠 Utility function to check if discount is valid based on date range
+const isDiscountActive = (pkg) => {
+  if (!pkg.discount || pkg.discount <= 0) return false;
+  if (!pkg.start_discount_date || !pkg.end_discount_date) return false;
+
+  const now = new Date();
+  const start = new Date(pkg.start_discount_date);
+  const end = new Date(pkg.end_discount_date);
+
+  return now >= start && now <= end;
+};
+
 export const getPackages = async () => {
   const { data, error } = await supabase
     .from("packages")
@@ -49,7 +62,7 @@ export const getPackages = async () => {
   if (error) throw new Error(error.message);
 
   return data.map(pkg => {
-    const hasDiscount = pkg.discount && pkg.discount > 0;
+    const hasDiscount = isDiscountActive(pkg);
     return {
       ...pkg,
       package_details: (pkg.package_details ?? []).map(detail => ({
@@ -81,7 +94,7 @@ export const getPackageById = async (id) => {
   if (error) throw new Error(error.message);
   if (!data) return null;
 
-  const hasDiscount = data.discount && data.discount > 0;
+  const hasDiscount = isDiscountActive(data);
 
   return {
     ...data,
@@ -113,7 +126,7 @@ export const getPackagesByCategory = async (categoryId, restaurantId) => {
   if (error) throw new Error(error.message);
 
   return data.map(pkg => {
-    const hasDiscount = pkg.discount && pkg.discount > 0;
+    const hasDiscount = isDiscountActive(pkg);
     return {
       ...pkg,
       package_details: (pkg.package_details ?? []).map(detail => ({
@@ -181,6 +194,7 @@ export const getTopPromotions = async () => {
     .select(`
       id,
       name,
+      description,
       discount,
       start_discount_date,
       end_discount_date,
@@ -191,20 +205,23 @@ export const getTopPromotions = async () => {
         package_id
       )
     `)
-    .gt("discount", 0) // must have discount > 0
+    .gt("discount", 0)
     .order("discount", { ascending: false })
     .limit(5);
 
   if (error) throw new Error(error.message);
 
-
-  return (data ?? []).map(pkg => ({
-    id: pkg.id,
-    name: pkg.name,
-    description: pkg.description,
-    discount: pkg.discount,
-    start_discount_date: pkg.start_discount_date,
-    end_discount_date: pkg.end_discount_date,
-    images: pkg.package_images ?? []
-  }));
+  // Filter only active promotions
+  const now = new Date();
+  return (data ?? [])
+    .filter(pkg => isDiscountActive(pkg))
+    .map(pkg => ({
+      id: pkg.id,
+      name: pkg.name,
+      description: pkg.description,
+      discount: pkg.discount,
+      start_discount_date: pkg.start_discount_date,
+      end_discount_date: pkg.end_discount_date,
+      images: pkg.package_images ?? []
+    }));
 };
