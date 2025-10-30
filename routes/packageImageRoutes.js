@@ -64,6 +64,25 @@ const upload = multer();
  *         description: Package image uploaded successfully
  */
 router.post("/package-images", upload.single("file"), addPackageImage);
+
+/**
+ * @swagger
+ * /api/package-images:
+ *   get:
+ *     summary: Retrieve all package images
+ *     tags: [PackageImages]
+ *     responses:
+ *       200:
+ *         description: A list of all package images
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/PackageImage'
+ *       500:
+ *         description: Server error occurred while fetching package images
+ */
 router.get("/package-images", fetchPackageImages);
 
 /**
